@@ -529,7 +529,7 @@ private fun PilotCard(s: Settings, name: String, avatarUrl: String, onAvatar: ()
                 Spacer(Modifier.weight(1f))
                 Row {
                     Text(serial, Modifier.weight(1f), style = ty.labelMedium, fontFamily = FontFamily.Monospace, color = LocalContentColor.current.copy(.75f))
-                    Text("从$since开始", style = ty.labelMedium, color = LocalContentColor.current.copy(.75f))
+                    Text("从${since}开始", style = ty.labelMedium, color = LocalContentColor.current.copy(.75f))
                 }
             }
         }
@@ -651,7 +651,7 @@ private fun ProfileView(vm: MainViewModel, s: Settings, d: DataState, openBadges
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("徽章收藏", style = ty.titleLargeEmphasized)
-                    Text("已解锁 $unlocked（共 ${PROFILE_BADGES.size}）", style = ty.bodySmall, color = cs.onSurfaceVariant)
+                    Text("已解锁 ${unlocked}（共 ${PROFILE_BADGES.size}）", style = ty.bodySmall, color = cs.onSurfaceVariant)
                 }
                 FilledTonalIconButton({ openBadges() }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.ArrowForward, "打开徽章档案") }
             }

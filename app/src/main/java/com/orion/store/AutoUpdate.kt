@@ -140,7 +140,7 @@ object AutoUpdate {
 
     private fun reason(m: String?) = when {
         m == null -> "安装失败。"
-        "UPDATE_INCOMPATIBLE" in m || "签名不匹配" in m.lowercase() -> "此更新由与安装的应用不同的开发人员签名。先卸载再切换。"
+        "UPDATE_INCOMPATIBLE" in m || "signatures do not match" in m.lowercase() -> "此更新由与安装的应用不同的开发人员签名。先卸载再切换。"
         "INSUFFICIENT_STORAGE" in m -> "存储空间不足，无法安装。"
         "VERSION_DOWNGRADE" in m -> "安装的版本比目录新。"
         "Shizuku" in m -> "Shizuku 未运行，因此无法进行静默安装。"

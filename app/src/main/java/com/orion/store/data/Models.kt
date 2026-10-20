@@ -118,8 +118,8 @@ object Defaults {
     val PACKAGE_SUFFIXES = listOf(".preview", ".debug", ".test", ".beta", ".canary", ".dev", ".alpha", ".nightly", ".staging", ".release")
     val FONTS = listOf(
         "spaceGrotesk" to "Space Grotesk", "inter" to "Inter", "poppins" to "Poppins", "manrope" to "Manrope", "outfit" to "Outfit",
-        "dmSans" to "DM Sans", "plusJakartaSans" to "加上 Jakarta Sans", "rubik" to "Rubik", "nunitoSans" to "努尼托桑斯",
-        "publicSans" to "公共字体", "systemDefault" to "系统默认值",
+        "dmSans" to "DM Sans", "plusJakartaSans" to "Plus Jakarta Sans", "rubik" to "Rubik", "nunitoSans" to "Nunito Sans",
+        "publicSans" to "Public Sans", "systemDefault" to "系统默认值",
     )
     val PTR_CHARACTERS = listOf("cat", "dog", "pokeball", "shield", "owl", "robot", "ghost", "kitty", "bunny", "batman")
     val FAQS = listOf(

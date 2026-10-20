@@ -298,7 +298,7 @@ fun AppRow(vm: MainViewModel, app: AppItem, index: Int = 0, count: Int = 1, modi
 /** Icon-first tile for grids and swimlanes on every platform. */
 @Composable
 fun AppTile(vm: MainViewModel, app: AppItem, from: String, modifier: Modifier = Modifier, width: Dp? = null) {
-    val featured = app.tags.any { it == "精选" || it == "Editor's Choice" }; val cs = MaterialTheme.colorScheme
+    val featured = app.tags.any { it == "Featured" || it == "Editor's Choice" }; val cs = MaterialTheme.colorScheme
     BoxWithConstraints(modifier.then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())) {
         val w = maxWidth
         Column(Modifier.fillMaxWidth().springClick(onLongClick = { vm.toggleFavorite(app.id) }) { vm.selectApp(app, from) }.padding(8.dp)) {
@@ -322,7 +322,7 @@ private fun LazyGridScope.collection(vm: MainViewModel, c: StoreCollection, inde
             item(c.id + "-t", span = full) { SectionTitle(c.title, Modifier.padding(top = 20.dp), c.subtitle) }
             itemsIndexed(c.apps, key = { _, it -> c.id + it.id }) { i, it -> AppTile(vm, it, c.id, Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null).reveal(i)) }
             val total = c.totalAppCount ?: c.apps.size
-            if (total > c.apps.size) item(c.id + "-all", span = full) { MoreButton("显示所有$total应用", vm::showAll) }
+            if (total > c.apps.size) item(c.id + "-all", span = full) { MoreButton("显示所有${total}应用", vm::showAll) }
         }
         CollectionType.SWIMLANE -> if (c.apps.isNotEmpty()) item(c.id, span = full) {
             when (c.id) { "updates-available" -> UpdateDeck(vm, c, Modifier.reveal(index)); "recommended_daily" -> Recommended(vm, c, Modifier.reveal(index)); else -> Swimlane(vm, c, Modifier.reveal(index)) }

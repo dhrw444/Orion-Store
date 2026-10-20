@@ -70,7 +70,7 @@ fun MyAppsTab(vm: MainViewModel, padding: PaddingValues) {
         else if (visible.isEmpty()) item {
             if (query.isNotBlank()) Column(Modifier.fillMaxWidth().padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Sym.SearchOff, null, Modifier.size(48.dp), tint = cs.onSurfaceVariant)
-                Text("没有匹配“$query”的应用", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleMedium)
+                Text("没有匹配“${query}”的应用", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleMedium)
                 TextButton({ vm.libraryQuery = "" }) { Text("清除搜索") }
             } else EmptyState(filterIcon(filter), EMPTY.getValue(filter), if (filter == MyAppsFilter.ALL) "Apps you download from Orion show up here." else null, Modifier.padding(top = 32.dp))
         }

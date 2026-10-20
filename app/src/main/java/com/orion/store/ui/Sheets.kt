@@ -106,7 +106,7 @@ fun AppPickerList(pool: List<AppItem>, platform: String, modifier: Modifier = Mo
     val shown = filtered.take(limit); val left = filtered.size - shown.size
     LazyColumn(modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
         item {
-            OutlinedTextField(q, { q = it; limit = 20 }, Modifier.fillMaxWidth(), placeholder = { Text("搜索$platform应用...") }, singleLine = true, shape = RoundedCornerShape(28.dp),
+            OutlinedTextField(q, { q = it; limit = 20 }, Modifier.fillMaxWidth(), placeholder = { Text("搜索${platform}应用...") }, singleLine = true, shape = RoundedCornerShape(28.dp),
                 leadingIcon = { Icon(Sym.Search, null) },
                 trailingIcon = { if (q.isNotEmpty()) IconButton({ q = ""; limit = 20 }) { Icon(Sym.Close, "清除搜索") } })
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -223,7 +223,7 @@ private fun ReleaseCard(vm: MainViewModel, r: Release, latest: Boolean, expanded
             if (r.name.isNotEmpty()) Text(r.name, style = ty.titleMedium, fontWeight = FontWeight.SemiBold)
             val count = r.sections.sumOf { it.items.size }
             val whenText = if (r.publishedAt > 0) android.text.format.DateUtils.getRelativeTimeSpanString(r.publishedAt).toString() else ""
-            Text(listOf(whenText, if (count > 0) "$count变化" else "").filter { it.isNotEmpty() }.joinToString(" · "), style = ty.labelMedium, color = fg.copy(.7f))
+            Text(listOf(whenText, if (count > 0) "${count}变化" else "").filter { it.isNotEmpty() }.joinToString(" · "), style = ty.labelMedium, color = fg.copy(.7f))
             if (expanded) {
                 r.sections.forEach { sec ->
                     if (sec.title.isNotEmpty()) Text(sec.title, Modifier.padding(top = 16.dp, bottom = 4.dp), style = ty.titleSmallEmphasized, color = cs.primary)

@@ -656,7 +656,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             installingId = null; scanningId = null; expectations -= k
             when {
                 "CORRUPT" in msg || "PARSE_ERROR" in msg -> { error("文件已损坏。正在删除..."); deleteReadyFile(app, file) }
-                "包似乎无效" in msg || "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in msg || "INSTALL_PARSE_FAILED" in msg ->
+                "package appears to be invalid" in msg || "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in msg || "INSTALL_PARSE_FAILED" in msg ->
                     error("更新失败：安装的应用与此软件包不兼容。可能需要重新安装。")
                 direct -> error("直接安装失败：$msg")
                 shizuku || "Shizuku" in msg -> error("${if (s.rootMode) "Root" else "Shizuku"} install failed: $msg")
