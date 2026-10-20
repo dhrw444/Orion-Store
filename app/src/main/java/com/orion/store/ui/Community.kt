@@ -523,7 +523,7 @@ private fun PilotCard(s: Settings, name: String, avatarUrl: String, onAvatar: ()
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(name.ifBlank { "未透露姓名的飞行员" }, style = ty.headlineSmallEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("${Xp.title(level)}·$xpXP", style = ty.labelLarge, color = LocalContentColor.current.copy(.8f))
+                        Text("${Xp.title(level)} · $xp XP", style = ty.labelLarge, color = LocalContentColor.current.copy(.8f))
                     }
                 }
                 Spacer(Modifier.weight(1f))
