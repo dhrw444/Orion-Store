@@ -52,9 +52,9 @@ import kotlinx.coroutines.launch
 
 private data class NavItem(val tab: Tab, val icon: ImageVector, val selected: ImageVector, val label: String, val subtitle: String)
 private val NAV = listOf(
-    NavItem(Tab.ANDROID, Sym.Android, Sym.AndroidFilled, "Apps", "apps"), NavItem(Tab.PC, Sym.DesktopWindows, Sym.DesktopWindowsFilled, "PC", "PC"),
-    NavItem(Tab.TV, Sym.Tv, Sym.TvFilled, "TV", "TV"), NavItem(Tab.MYAPPS, Sym.GridView, Sym.GridViewFilled, "My Apps", "my"),
-    NavItem(Tab.ABOUT, Sym.Code, Sym.CodeFilled, "Dev", "About Orion"),
+    NavItem(Tab.ANDROID, Sym.Android, Sym.AndroidFilled, "应用", "apps"), NavItem(Tab.PC, Sym.DesktopWindows, Sym.DesktopWindowsFilled, "PC", "PC"),
+    NavItem(Tab.TV, Sym.Tv, Sym.TvFilled, "电视", "电视"), NavItem(Tab.MYAPPS, Sym.GridView, Sym.GridViewFilled, "我的应用", "my"),
+    NavItem(Tab.ABOUT, Sym.Code, Sym.CodeFilled, "Dev", "关于Orion"),
 )
 
 @Composable
@@ -114,7 +114,7 @@ private fun Home(vm: MainViewModel) {
                         enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
                         ExtendedFloatingActionButton({ vm.batchCleanup() }, containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer) {
                             Icon(Sym.CleaningServices, null); Spacer(Modifier.width(12.dp))
-                            Column { Text("${d.pendingCleanup.size} files", fontWeight = FontWeight.Bold); Text("Tap to clean", style = MaterialTheme.typography.labelSmall) }
+                            Column { Text("${d.pendingCleanup.size} 文件", fontWeight = FontWeight.Bold); Text("点击即可清洁", style = MaterialTheme.typography.labelSmall) }
                         }
                     }
                 },
@@ -189,7 +189,7 @@ fun Header(vm: MainViewModel) {
             } else SearchPill(vm, subtitle)
         }
         AnimatedVisibility(vm.storeUpdateAvailable) {
-            FilledTonalIconButton({ vm.fBypassed = false; vm.loadApps(true) }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.SystemUpdate, "Store update") }
+            FilledTonalIconButton({ vm.fBypassed = false; vm.loadApps(true) }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.SystemUpdate, "商店更新") }
         }
         val dl = d.activeDownloads.size; val up = vm.updates.size
         IconButton({ vm.openSettings() }) {
@@ -199,7 +199,7 @@ fun Header(vm: MainViewModel) {
                     up > 0 -> Badge(containerColor = cs.tertiaryContainer, contentColor = cs.onTertiaryContainer) { Text("$up") }
                     vm.storeUpdateAvailable -> Badge { Text("!") }
                 }
-            }) { Icon(Sym.Settings, "Settings") }
+            }) { Icon(Sym.Settings, "设置") }
         }
         val p = s.userProfile
         IconButton(vm::openProfileStats) {
@@ -232,12 +232,12 @@ private fun SearchPill(vm: MainViewModel, scope: String) {
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = cs.onSurface), cursorBrush = SolidColor(cs.primary),
             decorationBox = { field ->
                 Box(contentAlignment = Alignment.CenterStart) {
-                    if (q.isEmpty()) Text(if (lib) "Search my apps" else "Search $scope", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    if (q.isEmpty()) Text(if (lib) "搜索我的应用" else "搜索$scope", style = MaterialTheme.typography.bodyLarge, color = cs.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                     field()
                 }
             })
         AnimatedContent(q.isNotEmpty(), label = "trail") { typing ->
-            if (typing) IconButton({ set("") }) { Icon(Sym.Close, "Clear search") }
+            if (typing) IconButton({ set("") }) { Icon(Sym.Close, "清除搜索") }
             else Row {
                 AnnouncementButton(vm)
                 val at = remember { mutableStateOf(Offset.Zero) }; val reveal = LocalThemeReveal.current
@@ -263,11 +263,11 @@ private fun AnnouncementButton(vm: MainViewModel) {
     TooltipBox(
         TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Below, 8.dp),
         tooltip = {
-            RichTooltip(title = { Text("From the Orion team") }, caretShape = TooltipDefaults.caretShape(),
+            RichTooltip(title = { Text("来自Orion团队") }, caretShape = TooltipDefaults.caretShape(),
                 action = {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton({ tip.dismiss() }) { Text("Later") }
-                        if (unread) TextButton({ vm.dismissAnnouncement(); vm.haptic(H.SELECTION); tip.dismiss() }) { Text("Got it") }
+                        TextButton({ tip.dismiss() }) { Text("稍后") }
+                        if (unread) TextButton({ vm.dismissAnnouncement(); vm.haptic(H.SELECTION); tip.dismiss() }) { Text("知道了") }
                     }
                 },
                 colors = TooltipDefaults.richTooltipColors(containerColor = cs.secondaryContainer, contentColor = cs.onSecondaryContainer,
@@ -326,18 +326,18 @@ private fun Overlays(vm: MainViewModel) {
 private fun AutoReportDialog(vm: MainViewModel, log: List<AutoResult>) {
     val failed = log.filter { !it.ok }; val ok = log.filter { it.ok }
     AlertDialog(vm::dismissAutoReport, icon = { Icon(Sym.SystemUpdate, null) },
-        title = { Text(if (failed.size == 1) "1 update needs you" else "${failed.size} updates need you") },
+        title = { Text(if (failed.size == 1) "1 项更新等待处理" else "${failed.size} updates need you") },
         text = {
             Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (ok.isNotEmpty()) Text("Updated in the background: ${ok.joinToString { it.name }}.", style = MaterialTheme.typography.bodyMedium)
                 failed.forEach { r ->
                     Column {
-                        Text("${r.name} ${r.version}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                        Text(r.error ?: "Install failed.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${r.name}${r.version}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(r.error ?: "安装失败。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
         },
-        confirmButton = { TextButton({ vm.dismissAutoReport(); vm.openSettings("queue") }) { Text("Open queue") } },
-        dismissButton = { TextButton(vm::dismissAutoReport) { Text("Later") } })
+        confirmButton = { TextButton({ vm.dismissAutoReport(); vm.openSettings("queue") }) { Text("开放队列") } },
+        dismissButton = { TextButton(vm::dismissAutoReport) { Text("稍后") } })
 }

@@ -78,7 +78,7 @@ fun ForcedGate(vm: MainViewModel) {
                 val scanning = status == "scanning"
                 val p by animateFloatAsState((if (scanning) v.scanProgress else progress).coerceIn(0f, 100f) / 100f, MaterialTheme.motionScheme.slowSpatialSpec(), label = "p")
                 Row(Modifier.fillMaxWidth().padding(top = 28.dp)) {
-                    Text(if (scanning) "Scanning" else "In progress", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                    Text(if (scanning) "扫描中" else "进行中", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                     Text("${(p * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                 }
                 LinearWavyProgressIndicator({ p }, Modifier.fillMaxWidth().padding(top = 8.dp))
@@ -96,16 +96,16 @@ fun ForcedGate(vm: MainViewModel) {
                     else -> OutlinedButton({ act(a.id) }, modifier = m, enabled = a.enabled, shapes = ButtonDefaults.shapes(), content = content)
                 }
             }
-            if (status == "byok_required" && test == null) TextButton(vm::forcedByok) { Text("Open VirusTotal settings") }
+            if (status == "byok_required" && test == null) TextButton(vm::forcedByok) { Text("打开 VirusTotal 设置") }
             if (v.showSupportBlock) Card(Modifier.fillMaxWidth().padding(top = 16.dp), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainer)) {
                 Column(Modifier.padding(16.dp)) {
                     if (v.showExportPath) {
-                        Text("Saved to", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("保存至", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(exportPath, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
-                    } else Text("If the installer keeps failing, save the APK to Downloads and install it manually from Files.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else Text("如果安装程序始终失败，请将 APK 保存到“下载”并从“文件”手动安装。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            if (test == null && s.devConfigEnabled) TextButton(vm::forcedBypass, Modifier.padding(top = 12.dp)) { Text("Developer bypass") }
+            if (test == null && s.devConfigEnabled) TextButton(vm::forcedBypass, Modifier.padding(top = 12.dp)) { Text("开发者绕过") }
             Spacer(Modifier.height(if (test != null) 200.dp else 24.dp))
         }
         if (test != null) DevPanel(vm, status, progress, text, Modifier.align(Alignment.BottomCenter))
@@ -119,9 +119,9 @@ private fun Verdict(st: VtStats) {
         Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(if (safe) Sym.VerifiedUser else Sym.GppMaybe, null, tint = c); Spacer(Modifier.width(10.dp))
-                Text(if (safe) "Scan complete" else "Scan complete with caution", style = MaterialTheme.typography.titleMediumEmphasized, color = c)
+                Text(if (safe) "扫描完成" else "扫描完成需谨慎", style = MaterialTheme.typography.titleMediumEmphasized, color = c)
             }
-            Text(if (safe) "No engines flagged the APK" else "Review the report before installing", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+            Text(if (safe) "没有引擎标记为 APK" else "安装前查看报告", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
             Row(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Clean" to st.harmless + st.undetected, "Flagged" to st.flagged, "Engines" to st.total).forEach { (l, n) ->
                     Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surface.copy(.6f)).padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -140,15 +140,15 @@ private fun KeyEntry(vm: MainViewModel) {
     var key by remember { mutableStateOf("") }; var show by remember { mutableStateOf(false) }
     val clip = LocalClipboardManager.current
     Column(Modifier.fillMaxWidth().padding(top = 24.dp)) {
-        OutlinedTextField(key, { key = it }, Modifier.fillMaxWidth(), label = { Text("VirusTotal API key") }, placeholder = { Text("Enter your VirusTotal API key") }, singleLine = true,
+        OutlinedTextField(key, { key = it }, Modifier.fillMaxWidth(), label = { Text("VirusTotal API 密钥") }, placeholder = { Text("输入您的 VirusTotal API 密钥") }, singleLine = true,
             shape = RoundedCornerShape(20.dp), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = { IconButton({ show = !show }) { Icon(if (show) Sym.VisibilityOff else Sym.Visibility, if (show) "Hide API key" else "Show API key") } })
+            trailingIcon = { IconButton({ show = !show }) { Icon(if (show) Sym.VisibilityOff else Sym.Visibility, if (show) "隐藏 API 密钥" else "显示 API 密钥") } })
         Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button({ vm.forcedSaveKey(key) }, enabled = key.isNotBlank(), shapes = ButtonDefaults.shapes()) { Text("Save & scan") }
+            Button({ vm.forcedSaveKey(key) }, enabled = key.isNotBlank(), shapes = ButtonDefaults.shapes()) { Text("保存并扫描") }
             if (saved.isNotEmpty()) {
-                IconButton({ clip.setText(AnnotatedString(saved)) }) { Icon(Sym.ContentCopy, "Copy API key") }
-                TextButton({ vm.set { it.copy(virusTotalApiKey = "") } }) { Text("Revoke saved key") }
+                IconButton({ clip.setText(AnnotatedString(saved)) }) { Icon(Sym.ContentCopy, "复制 API 密钥") }
+                TextButton({ vm.set { it.copy(virusTotalApiKey = "") } }) { Text("撤销已保存的密钥") }
             }
         }
     }
@@ -159,18 +159,18 @@ private fun DevPanel(vm: MainViewModel, status: String, progress: Float, text: S
     var open by remember { mutableStateOf(true) }
     ElevatedCard(modifier.navigationBarsPadding().padding(12.dp).fillMaxWidth().widthIn(max = 560.dp), shape = RoundedCornerShape(28.dp)) {
         Row(Modifier.clickable { open = !open }.padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Badge(containerColor = MaterialTheme.colorScheme.tertiary) { Text("DEV", Modifier.padding(2.dp)) }
+            Badge(containerColor = MaterialTheme.colorScheme.tertiary) { Text("开发", Modifier.padding(2.dp)) }
             Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
-                Text("Forced update preview", style = MaterialTheme.typography.labelLarge)
+                Text("强制更新预览", style = MaterialTheme.typography.labelLarge)
                 Text(status, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
         }
         AnimatedVisibility(open) {
             Column(Modifier.padding(bottom = 12.dp)) {
                 Row(Modifier.padding(horizontal = 16.dp)) {
-                    Text("Mock preview", style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f)); Text("${progress.toInt()}%", style = MaterialTheme.typography.labelMedium)
+                    Text("模拟预览", style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f)); Text("${progress.toInt()}%", style = MaterialTheme.typography.labelMedium)
                 }
-                Text(text.ifEmpty { "Preview the current forced update state." }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                Text(text.ifEmpty { "预览当前强制更新状态。" }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                 LazyRow(contentPadding = PaddingValues(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     items(TEST_STATUSES) { st -> FilterChip(st == status, { vm.forcedTest = st; vm.haptic(H.SELECTION) }, { Text(st.replace('_', ' ')) }) }
                 }
@@ -207,18 +207,18 @@ fun Maintenance(vm: MainViewModel) {
                     }
                     Surface(onClick = { vm.haptic(H.SELECTION); game = true }, modifier = Modifier.padding(top = 10.dp), shape = Pill, color = cs.tertiary, contentColor = cs.onTertiary) {
                         Row(Modifier.padding(horizontal = 14.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Sym.SportsEsports, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Tap to play", style = ty.labelLargeEmphasized)
+                            Icon(Sym.SportsEsports, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("点击播放", style = ty.labelLargeEmphasized)
                         }
                     }
                 }
             }
             Surface(Modifier.padding(top = 12.dp), shape = Pill, color = cs.secondaryContainer, contentColor = cs.onSecondaryContainer) {
                 Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Sym.Construction, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Under overhaul", style = ty.labelLarge)
+                    Icon(Sym.Construction, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("检修中", style = ty.labelLarge)
                 }
             }
-            Text("Improving Orion", Modifier.padding(top = 8.dp), style = ty.headlineLargeEmphasized, textAlign = TextAlign.Center)
-            Text(vm.config?.maintenanceMessage ?: "We're polishing the store with a major overhaul. Hang tight, it will be worth the wait.",
+            Text("改善Orion", Modifier.padding(top = 8.dp), style = ty.headlineLargeEmphasized, textAlign = TextAlign.Center)
+            Text(vm.config?.maintenanceMessage ?: "我们正在对商店进行一次大修。坚持住，等待是值得的。",
                 Modifier.padding(top = 8.dp).widthIn(max = 440.dp), style = ty.bodyMedium, textAlign = TextAlign.Center, color = cs.onSurfaceVariant,
                 maxLines = 9, overflow = TextOverflow.Ellipsis)
             Column(Modifier.padding(top = 16.dp).widthIn(max = 440.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -226,21 +226,21 @@ fun Maintenance(vm: MainViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ContainedLoadingIndicator(Modifier.size(40.dp), containerColor = cs.primaryContainer, indicatorColor = cs.primary)
                         Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                            Text("Store status", style = ty.labelMedium, color = cs.onSurfaceVariant)
-                            Text("Under maintenance", style = ty.titleMediumEmphasized, color = cs.primary)
+                            Text("店铺状态", style = ty.labelMedium, color = cs.onSurfaceVariant)
+                            Text("维护中", style = ty.titleMediumEmphasized, color = cs.primary)
                         }
                     }
                     LinearWavyProgressIndicator({ fill }, Modifier.fillMaxWidth(), waveSpeed = 6.dp)
                 }
-                CtaButton("Support development", { vm.haptic(H.SELECTION); donate = true }, icon = Sym.Favorite)
-                if (socials.discord.isNotEmpty()) CtaButton("Join the community", { vm.haptic(H.SELECTION); vm.tracker.open(socials.discord) }, icon = Sym.BrandDiscord, tonal = true)
+                CtaButton("支持发展", { vm.haptic(H.SELECTION); donate = true }, icon = Sym.Favorite)
+                if (socials.discord.isNotEmpty()) CtaButton("加入社区", { vm.haptic(H.SELECTION); vm.tracker.open(socials.discord) }, icon = Sym.BrandDiscord, tonal = true)
                 AnimatedVisibility(dev) {
                     OutlinedButton({ vm.bypassMaintenance = true; vm.haptic(H.SUCCESS) }, modifier = Modifier.fillMaxWidth(), shapes = ButtonDefaults.shapes()) {
-                        Icon(Sym.Terminal, null); Spacer(Modifier.width(8.dp)); Text("Developer bypass")
+                        Icon(Sym.Terminal, null); Spacer(Modifier.width(8.dp)); Text("开发者绕过")
                     }
                 }
             }
-            Text("Orion Store · $STORE_VERSION", Modifier.padding(top = 8.dp).clip(CircleShape).clickable(indication = null, interactionSource = null) {
+            Text("Orion Store·$STORE_VERSION", Modifier.padding(top = 8.dp).clip(CircleShape).clickable(indication = null, interactionSource = null) {
                 val now = System.currentTimeMillis()
                 if (now - last < 500) { taps++; if (taps == 7) { dev = true; vm.haptic(H.SUCCESS) } else if (taps > 3) vm.haptic(H.SELECTION) } else taps = 1
                 last = now

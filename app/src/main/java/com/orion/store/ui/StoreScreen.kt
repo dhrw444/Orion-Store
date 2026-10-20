@@ -81,15 +81,15 @@ fun StoreTab(vm: MainViewModel, platform: String, contentPadding: PaddingValues)
                 when {
                     vm.loading || !vm.tabReady -> item("loading", span = full) { StoreSkeleton(modern) }
                     list.isEmpty() -> item("empty", span = full) {
-                        EmptyState(if (ts.filterFavorites) Sym.HeartBroken else Sym.SearchOff, if (ts.filterFavorites) "No favorites found" else "No $platform apps found",
-                            if (ts.filterFavorites) "Long-press any app card or tap the heart in details to add it here." else null)
+                        EmptyState(if (ts.filterFavorites) Sym.HeartBroken else Sym.SearchOff, if (ts.filterFavorites) "未找到收藏夹" else "未找到 $platform 个应用",
+                            if (ts.filterFavorites) "长按任意应用卡或点击详细信息中的心形即可将其添加到此处。" else null)
                     }
                     modern && modernHome.isNotEmpty() && vm.showModernHome() && !vm.showAllSorted && vm.expandedView == null ->
                         modernHome.forEachIndexed { i, c -> collection(vm, c, i) }
                     modern && vm.expandedView == "new_updated" && vm.expandedApps.isNotEmpty() -> {
-                        item("exp-title", span = full) { SectionTitle("New & Updated", Modifier.padding(top = 8.dp)) }
+                        item("exp-title", span = full) { SectionTitle("新的和更新的", Modifier.padding(top = 8.dp)) }
                         itemsIndexed(vm.expandedApps, key = { _, it -> "exp-" + it.id }) { i, it -> AppTile(vm, it, "exp", Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null).reveal(i)) }
-                        item("exp-more", span = full) { MoreButton("View more apps", vm::expandedMore) }
+                        item("exp-more", span = full) { MoreButton("查看更多应用", vm::expandedMore) }
                     }
                     else -> classicList(vm, list, vm.sortControl, view)
                 }
@@ -99,7 +99,7 @@ fun StoreTab(vm: MainViewModel, platform: String, contentPadding: PaddingValues)
         // Sits just above the dock, and drops to the corner when the dock slides away, instead of floating at a fixed dock-clearing height.
         val lift by animateDpAsState(if (vm.navShown) 88.dp else 16.dp, MaterialTheme.motionScheme.defaultSpatialSpec(), label = "fab")
         AnimatedVisibility(showTop, Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(end = 16.dp, bottom = lift), enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
-            SmallFloatingActionButton({ scope.launch { grid.animateScrollToItem(0) }; vm.haptic(H.LIGHT) }) { Icon(Sym.KeyboardArrowUp, "Scroll to top") }
+            SmallFloatingActionButton({ scope.launch { grid.animateScrollToItem(0) }; vm.haptic(H.LIGHT) }) { Icon(Sym.KeyboardArrowUp, "滚动到顶部") }
         }
     }
 }
@@ -137,7 +137,7 @@ private fun Filters(vm: MainViewModel, ts: TabViewState, cats: List<String>, cou
             item("sort") { SortButton(vm, if (modern) MODERN_SORTS else CLASSIC_SORTS) }
             item("fav") {
                 FilledTonalIconToggleButton(ts.filterFavorites, { vm.toggleFavorites() }, shapes = IconButtonDefaults.toggleableShapes()) {
-                    Icon(if (ts.filterFavorites) Sym.Favorite else Sym.FavoriteBorder, "Show Favorites")
+                    Icon(if (ts.filterFavorites) Sym.Favorite else Sym.FavoriteBorder, "显示收藏夹")
                 }
             }
             if (cats.isNotEmpty()) item("div") { VerticalDivider(Modifier.height(28.dp).padding(horizontal = 4.dp), color = cs.outlineVariant) }
@@ -150,14 +150,14 @@ private fun Filters(vm: MainViewModel, ts: TabViewState, cats: List<String>, cou
         }
         Row(Modifier.padding(start = 20.dp, end = 12.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                if (modern && filtered) Text(if (ts.category == "All") "Search results" else ts.category, style = MaterialTheme.typography.headlineSmallEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("$count apps · " + (if (ts.query.isNotEmpty()) "“${ts.query}”" else vm.sortControl.label), style = MaterialTheme.typography.labelLarge,
+                if (modern && filtered) Text(if (ts.category == "All") "搜索结果" else ts.category, style = MaterialTheme.typography.headlineSmallEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("$count 应用·" + (if (ts.query.isNotEmpty()) "“${ts.query}”" else vm.sortControl.label), style = MaterialTheme.typography.labelLarge,
                     color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             if (!modern) IconButton(vm::reload, enabled = !vm.refreshing) { if (vm.refreshing) LoadingIndicator(Modifier.size(24.dp)) else Icon(Sym.Refresh, "Refresh") }
             vm.submissionCooldown?.let { AssistChip({}, { Text(it) }, leadingIcon = { Icon(Sym.Schedule, null, Modifier.size(16.dp)) }, enabled = false) }
                 ?: TextButton({ vm.open(Overlay.SUBMISSION) }, shapes = ButtonDefaults.shapes()) {
-                    Icon(Sym.AddCircleOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Submit app")
+                    Icon(Sym.AddCircleOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("提交应用")
                 }
         }
     }
@@ -177,9 +177,9 @@ fun Choice(on: Boolean, label: String, icon: androidx.compose.ui.graphics.vector
 private fun SortButton(vm: MainViewModel, opts: List<SortOption>) {
     var open by remember { mutableStateOf(false) }
     Box {
-        FilledTonalIconButton({ open = true }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.SwapVert, "Sort Apps") }
+        FilledTonalIconButton({ open = true }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.SwapVert, "对应用进行排序") }
         DropdownMenu(open, { open = false }, shape = RoundedCornerShape(20.dp)) {
-            Text("Sort by", Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("排序方式", Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             opts.forEach { o ->
                 val on = vm.sortControl == o
                 DropdownMenuItem({ Text(o.label, fontWeight = if (on) FontWeight.Bold else null) }, { vm.sort(o); open = false; vm.haptic(H.SELECTION) },
@@ -235,7 +235,7 @@ private fun LetterHeader(letter: String, count: Int) = Row(Modifier.fillMaxWidth
         Text(letter, style = MaterialTheme.typography.titleMediumEmphasized, color = cs.onPrimaryContainer)
     }
     Spacer(Modifier.width(12.dp))
-    Text(if (count == 1) "1 app" else "$count apps", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
+    Text(if (count == 1) "1 个应用" else "$count apps", style = MaterialTheme.typography.labelLarge, color = cs.onSurfaceVariant)
 }
 
 private class Look(val shape: RoundedPolygon, val bg: Color, val fg: Color, val icon: ImageVector)
@@ -273,7 +273,7 @@ fun AppRow(vm: MainViewModel, app: AppItem, index: Int = 0, count: Int = 1, modi
     val src = remember { MutableInteractionSource() }
     val shapes = ListItemDefaults.segmentedShapes(index, count)
     // Swipe left to favorite (or unfavorite); the row springs back once the heart has filled.
-    SwipeRow(shapes.shape, modifier.padding(horizontal = 16.dp), left = SwipeAction(if (fav) Sym.HeartBroken else Sym.Favorite, if (fav) "Remove from favorites" else "Add to favorites",
+    SwipeRow(shapes.shape, modifier.padding(horizontal = 16.dp), left = SwipeAction(if (fav) Sym.HeartBroken else Sym.Favorite, if (fav) "从收藏夹中删除" else "添加到收藏夹",
         cs.tertiaryContainer, cs.onTertiaryContainer, removes = false) { vm.toggleFavorite(app.id) }) {
     SegmentedListItem({ vm.haptic(H.SELECTION); vm.selectApp(app, "list") }, shapes,
         leadingContent = { AppIcon(app, if (compact) 44.dp else 52.dp, from = "list") },
@@ -283,12 +283,12 @@ fun AppRow(vm: MainViewModel, app: AppItem, index: Int = 0, count: Int = 1, modi
             Text(status?.first ?: listOf(app.author, app.size).filter { it.isNotEmpty() }.joinToString(" · "), maxLines = 1, overflow = TextOverflow.Ellipsis,
                 color = status?.second ?: Color.Unspecified, fontWeight = if (status != null) FontWeight.Medium else null)
         },
-        onLongClick = { vm.toggleFavorite(app.id) }, onLongClickLabel = if (fav) "Remove from favorites" else "Add to favorites",
+        onLongClick = { vm.toggleFavorite(app.id) }, onLongClickLabel = if (fav) "从收藏夹中删除" else "添加到收藏夹",
         colors = ListItemDefaults.segmentedColors(containerColor = cs.surfaceContainer), interactionSource = src) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(app.name, Modifier.weight(1f, false), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             AnimatedVisibility(fav, enter = scaleIn(MaterialTheme.motionScheme.fastSpatialSpec()), exit = scaleOut()) {
-                Icon(Sym.Favorite, "Favorite", Modifier.padding(start = 6.dp).size(16.dp), tint = cs.primary)
+                Icon(Sym.Favorite, "收藏", Modifier.padding(start = 6.dp).size(16.dp), tint = cs.primary)
             }
         }
     }
@@ -298,7 +298,7 @@ fun AppRow(vm: MainViewModel, app: AppItem, index: Int = 0, count: Int = 1, modi
 /** Icon-first tile for grids and swimlanes on every platform. */
 @Composable
 fun AppTile(vm: MainViewModel, app: AppItem, from: String, modifier: Modifier = Modifier, width: Dp? = null) {
-    val featured = app.tags.any { it == "Featured" || it == "Editor's Choice" }; val cs = MaterialTheme.colorScheme
+    val featured = app.tags.any { it == "精选" || it == "Editor's Choice" }; val cs = MaterialTheme.colorScheme
     BoxWithConstraints(modifier.then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())) {
         val w = maxWidth
         Column(Modifier.fillMaxWidth().springClick(onLongClick = { vm.toggleFavorite(app.id) }) { vm.selectApp(app, from) }.padding(8.dp)) {
@@ -306,7 +306,7 @@ fun AppTile(vm: MainViewModel, app: AppItem, from: String, modifier: Modifier = 
             Spacer(Modifier.height(8.dp))
             // minLines keeps every tile the same height, so a two-line name scrolling into a lane never changes the lane height and shoves the page.
             Text(app.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(if (featured) "Featured" else app.category.ifEmpty { app.size }, style = MaterialTheme.typography.labelMedium, maxLines = 1,
+            Text(if (featured) "精选" else app.category.ifEmpty { app.size }, style = MaterialTheme.typography.labelMedium, maxLines = 1,
                 color = if (featured) cs.primary else cs.onSurfaceVariant)
         }
     }
@@ -322,7 +322,7 @@ private fun LazyGridScope.collection(vm: MainViewModel, c: StoreCollection, inde
             item(c.id + "-t", span = full) { SectionTitle(c.title, Modifier.padding(top = 20.dp), c.subtitle) }
             itemsIndexed(c.apps, key = { _, it -> c.id + it.id }) { i, it -> AppTile(vm, it, c.id, Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null).reveal(i)) }
             val total = c.totalAppCount ?: c.apps.size
-            if (total > c.apps.size) item(c.id + "-all", span = full) { MoreButton("Show all $total apps", vm::showAll) }
+            if (total > c.apps.size) item(c.id + "-all", span = full) { MoreButton("显示所有$total应用", vm::showAll) }
         }
         CollectionType.SWIMLANE -> if (c.apps.isNotEmpty()) item(c.id, span = full) {
             when (c.id) { "updates-available" -> UpdateDeck(vm, c, Modifier.reveal(index)); "recommended_daily" -> Recommended(vm, c, Modifier.reveal(index)); else -> Swimlane(vm, c, Modifier.reveal(index)) }
@@ -403,12 +403,12 @@ private fun UpdateDeck(vm: MainViewModel, c: StoreCollection, modifier: Modifier
             c.apps.take(3).forEachIndexed { i, a -> AppIcon(a, 40.dp, Modifier.offset(x = (i * 22).dp).graphicsLayer { shadowElevation = 2.dp.toPx(); shape = RoundedCornerShape(10.dp) }, from = c.id) }
         }
         Column(Modifier.weight(1f).padding(start = 12.dp, end = 8.dp)) {
-            Text(if (n == 1) "1 update ready" else "$n updates ready", style = MaterialTheme.typography.titleSmallEmphasized, maxLines = 1)
+            Text(if (n == 1) "1 项更新已就绪" else "$n updates ready", style = MaterialTheme.typography.titleSmallEmphasized, maxLines = 1)
             Text(c.apps.take(2).joinToString(", ") { it.name } + if (n > 2) " +${n - 2}" else "", style = MaterialTheme.typography.bodySmall,
                 color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         FilledTonalButton({ vm.haptic(H.MEDIUM); vm.updates.filter { it.platform == Platform.ANDROID && it.id !in d.activeDownloads && it.id !in d.readyToInstall }.forEach { vm.download(it) } },
-            shapes = ButtonDefaults.shapes(), contentPadding = ButtonDefaults.SmallContentPadding) { Text("Update all") }
+            shapes = ButtonDefaults.shapes(), contentPadding = ButtonDefaults.SmallContentPadding) { Text("全部更新") }
     }
 }
 
@@ -474,7 +474,7 @@ private fun Categories(vm: MainViewModel, c: StoreCollection, modifier: Modifier
                     Icon(faIcon(card.icon, Sym.Layers), null, Modifier.size(30.dp).graphicsLayer { rotationZ = -p * 30f }, tint = fg)
                 }
                 Text(card.label, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
-                Text("${card.count} apps", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
+                Text("${card.count} 应用", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
             }
         }
     }
@@ -517,8 +517,8 @@ private fun Bundles(vm: MainViewModel, c: StoreCollection, modifier: Modifier) =
                         Icon(Sym.Add, null, tint = cs.onPrimaryContainer)
                     }
                 }
-                Text("Create bundle", Modifier.padding(start = 6.dp, top = 10.dp), style = MaterialTheme.typography.titleSmallEmphasized)
-                Text("Pick your own apps", Modifier.padding(horizontal = 6.dp), style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
+                Text("创建合集", Modifier.padding(start = 6.dp, top = 10.dp), style = MaterialTheme.typography.titleSmallEmphasized)
+                Text("选择您自己的应用", Modifier.padding(horizontal = 6.dp), style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant)
             }
         }
     }

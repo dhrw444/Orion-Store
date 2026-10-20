@@ -17,7 +17,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-class HttpError(val code: Int, val body: String) : IOException("Request failed with status $code")
+class HttpError(val code: Int, val body: String) : IOException("请求失败，状态为 $code")
 
 object Net {
     val client: OkHttpClient = OkHttpClient.Builder().connectTimeout(Defaults.NETWORK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
@@ -63,7 +63,7 @@ class Repository(private val ctx: Context) {
     private fun bust(url: String, ts: String) = "$url${if ('?' in url) '&' else '?'}t=$ts"
 
     private suspend fun fetchSet(config: StoreConfig, appsFallback: String?, appsTs: String): Pair<JsonElement, JsonElement?> = coroutineScope {
-        val appsUrl = config.appsJsonUrl.ifEmpty { appsFallback ?: throw IOException("Dev config is missing appsJsonUrl.") }
+        val appsUrl = config.appsJsonUrl.ifEmpty { appsFallback ?: throw IOException("开发配置缺少 appsJsonUrl。") }
         val mirrorUrl = config.mirrorJsonUrl?.ifEmpty { null } ?: Defaults.MIRROR_JSON
         val apps = async { Net.retry(bust(appsUrl, appsTs), 1, noStore = true) }
         val mirror = async { runCatching { json.parseToJsonElement(Net.retry(bust(mirrorUrl, appsTs), 1)) }.getOrNull() }
@@ -74,17 +74,17 @@ class Repository(private val ctx: Context) {
     suspend fun loadCatalog(s: Settings, manual: Boolean): CatalogLoad {
         val useDev = s.devConfigEnabled; val remote = useDev || s.useRemoteJson
         val ts = System.currentTimeMillis().toString(); val appsTs = ts
-        if (!remote) return if (s.loadLocalData) CatalogLoad(embeddedApps(), null, null, "Disabled") else CatalogLoad(null, null, null, "Disabled & Blocked Local", failed = true)
+        if (!remote) return if (s.loadLocalData) CatalogLoad(embeddedApps(), null, null, "Disabled") else CatalogLoad(null, null, null, "禁用和阻止本地", failed = true)
         var devError: String? = null
         if (useDev) {
             try {
-                val url = s.devConfigUrl.trim().ifEmpty { throw IOException("Enter a developer config URL before reloading.") }
-                val cfgText = try { Net.retry(bust(url, ts), 1, noStore = true) } catch (e: HttpError) { throw IOException("Dev config request failed with ${e.code}") }
+                val url = s.devConfigUrl.trim().ifEmpty { throw IOException("重新加载之前输入开发人员配置 URL。") }
+                val cfgText = try { Net.retry(bust(url, ts), 1, noStore = true) } catch (e: HttpError) { throw IOException("开发配置请求失败，显示 ${e.code}") }
                 val cfg = CatalogProcessor.parseConfig(cfgText)
-                if (cfg.appsJsonUrl.isEmpty()) throw IOException("Dev config is missing appsJsonUrl.")
-                val (apps, mirror) = try { fetchSet(cfg, null, appsTs) } catch (e: HttpError) { throw IOException("Dev apps request failed with ${e.code}") }
-                return CatalogLoad(apps, mirror, cfg, "Developer Config")
-            } catch (e: Exception) { devError = e.message ?: "Failed to load developer config." }
+                if (cfg.appsJsonUrl.isEmpty()) throw IOException("开发配置缺少 appsJsonUrl。")
+                val (apps, mirror) = try { fetchSet(cfg, null, appsTs) } catch (e: HttpError) { throw IOException("开发应用请求失败，显示 ${e.code}") }
+                return CatalogLoad(apps, mirror, cfg, "开发者配置")
+            } catch (e: Exception) { devError = e.message ?: "无法加载开发者配置。" }
         } else {
             for (i in Defaults.CONFIG_URLS.indices) {
                 runCatching {
@@ -94,8 +94,8 @@ class Repository(private val ctx: Context) {
                 }
             }
         }
-        return if (s.loadLocalData) CatalogLoad(embeddedApps(), null, null, if (useDev) "Developer Config Failed (Local Fallback)" else "Offline (Local)", devError)
-        else CatalogLoad(null, null, null, if (useDev) "Developer Config Failed" else "Failed (Offline)", devError, failed = true)
+        return if (s.loadLocalData) CatalogLoad(embeddedApps(), null, null, if (useDev) "开发人员配置失败（本地回退）" else "离线（本地）", devError)
+        else CatalogLoad(null, null, null, if (useDev) "开发者配置失败" else "失败（离线）", devError, failed = true)
     }
 
 }

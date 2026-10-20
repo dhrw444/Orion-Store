@@ -228,8 +228,8 @@ fun statusText(app: AppItem): Pair<String, Color>? {
     val (st, p) = cardState(app); val cs = MaterialTheme.colorScheme
     val local = LocalS.current.installedVersions[app.id]
     return when (st) {
-        CardState.DOWNLOADING -> (if (p > 0f) "Downloading ${p.toInt()}%" else "Starting download") to cs.primary
-        CardState.READY -> "Ready to install" to cs.primary
+        CardState.DOWNLOADING -> (if (p > 0f) "正在下载${p.toInt()}%" else "开始下载") to cs.primary
+        CardState.READY -> "准备安装" to cs.primary
         CardState.UPDATE -> "Update · v${preferredVersion(app, LocalS.current.streamOf(app.id)).removePrefix("v")}" to cs.tertiary
         CardState.INSTALLED -> "Installed · v${local.orEmpty().removePrefix("v")}" to cs.onSurfaceVariant
         CardState.NONE -> null
@@ -245,7 +245,7 @@ fun SectionTitle(title: String, modifier: Modifier = Modifier, subtitle: String?
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis) }
         }
         action?.invoke()
-        onMore?.let { FilledTonalIconButton(it, shapes = IconButtonDefaults.shapes()) { Icon(Sym.ArrowForward, "See all $title") } }
+        onMore?.let { FilledTonalIconButton(it, shapes = IconButtonDefaults.shapes()) { Icon(Sym.ArrowForward, "查看全部$title") } }
     }
 
 @Composable

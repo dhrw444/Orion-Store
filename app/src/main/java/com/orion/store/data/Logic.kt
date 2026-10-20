@@ -74,7 +74,7 @@ object Share {
     const val BADGE_IMG = "https://raw.githubusercontent.com/RookieEnough/Orion-Store/refs/heads/main/assets/orion-badge.png"
     fun deepLink(id: String) = "orionstore://app/${enc(id)}"
     fun webLink(id: String, icon: String?) = "$BADGE_BASE/redirect.html?id=${enc(id)}" + (icon?.trim()?.takeIf { it.isNotEmpty() }?.let { "&icon=${enc(it)}" } ?: "")
-    fun markdown(web: String) = "[![Get it on Orion Store]($BADGE_IMG)]($web)"
+    fun markdown(web: String) = "[![获取Orion Store]($BADGE_IMG)]($web)"
     fun html(web: String) = "<a href=\"$web\">\n  <img src=\"$BADGE_IMG\" alt=\"Get it on Orion Store\" height=\"60\">\n</a>"
 }
 // endregion
@@ -95,12 +95,12 @@ private class Normed(val src: AppItem) {
 
 private val PRESETS = listOf(
     Preset("music", "Music", "fa-headphones", "#f472b6", listOf("#ec4899", "#8b5cf6"), emptyList(), listOf("music", "audio", "song", "songs", "album", "albums", "listen", "radio", "deezer", "track", "tracks", "scrobble")),
-    Preset("movies", "Movies", "fa-film", "#fb923c", listOf("#f97316", "#ef4444"), emptyList(), listOf("movie", "movies", "video", "videos", "watch", "stream", "streaming", "netflix", "prime video", "hulu", "youtube")),
+    Preset("movies", "Movies", "fa-film", "#fb923c", listOf("#f97316", "#ef4444"), emptyList(), listOf("movie", "movies", "video", "videos", "watch", "stream", "streaming", "netflix", "主要视频", "hulu", "youtube")),
     Preset("anime", "Anime", "fa-dragon", "#a78bfa", listOf("#8b5cf6", "#ec4899"), emptyList(), listOf("anime", "manga", "anilist", "komikku")),
     Preset("health", "Health", "fa-heart-pulse", "#34d399", listOf("#10b981", "#14b8a6"), emptyList(), listOf("health", "fitness", "workout", "sleep", "step", "steps", "habit", "meditation", "wellness")),
     Preset("privacy", "Privacy", "fa-user-shield", "#2dd4bf", listOf("#14b8a6", "#06b6d4"), listOf("Privacy"), listOf("privacy", "private", "security", "secure", "encrypt", "encrypted", "authenticator", "2fa", "totp", "backup")),
     Preset("social", "Social", "fa-comments", "#60a5fa", listOf("#3b82f6", "#6366f1"), listOf("Social"), listOf("social", "community", "chat", "friends", "messaging", "anilist")),
-    Preset("developer", "Developer", "fa-code", "#f59e0b", listOf("#f59e0b", "#f97316"), listOf("Development"), listOf("developer", "development", "code", "coding", "ide", "studio", "terminal", "debug")),
+    Preset("developer", "开发者", "fa-code", "#f59e0b", listOf("#f59e0b", "#f97316"), listOf("Development"), listOf("developer", "development", "code", "coding", "ide", "studio", "terminal", "debug")),
     Preset("reading", "Reading", "fa-book-open", "#22c55e", listOf("#22c55e", "#84cc16"), emptyList(), listOf("reader", "reading", "read", "book", "books", "comic", "manga", "novel")),
     Preset("productivity", "Productivity", "fa-briefcase", "#06b6d4", listOf("#06b6d4", "#3b82f6"), emptyList(), listOf("productivity", "workflow", "organize", "organise", "notes", "tasks", "todo", "calendar")),
     Preset("utilities", "Utilities", "fa-toolbox", "#94a3b8", listOf("#475569", "#0f172a"), listOf("Utility", "Utilities"), listOf("utility", "tools", "tool", "wallpaper", "download", "manager", "launcher", "offline")),
@@ -159,8 +159,8 @@ fun normalizeArch(arch: String?): Arch {
 }
 
 fun friendlyArch(arch: String) = when (normalizeArch(arch)) {
-    Arch.ARM64 -> "ARM64 (64-bit)"; Arch.ARMv7 -> "ARMv7 (32-bit)"; Arch.x64 -> "x86_64 (64-bit)"; Arch.x86 -> "x86 (32-bit)"
-    Arch.Universal -> "Universal"; Arch.Unknown -> arch.uppercase().ifEmpty { "Unknown" }
+    Arch.ARM64 -> "ARM64（64 位）"; Arch.ARMv7 -> "ARMv7（32 位）"; Arch.x64 -> "x86_64（64 位）"; Arch.x86 -> "x86（32 位）"
+    Arch.Universal -> "Universal"; Arch.Unknown -> arch.uppercase().ifEmpty { "未知" }
 }
 
 /** @return compatible to recommended */
@@ -181,8 +181,8 @@ private val IMAGE_EXT = listOf(".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp",
 fun explainRejectedImageLink(url: String?): String? {
     val t = url?.trim().orEmpty()
     if (t.isEmpty()) return null
-    if (!Regex("^https?://", RegexOption.IGNORE_CASE).containsMatchIn(t)) return "Link must start with http:// or https://"
-    val u = runCatching { URI(t) }.getOrNull()?.takeIf { !it.host.isNullOrEmpty() } ?: return "Link is not a valid URL."
+    if (!Regex("^https?://", RegexOption.IGNORE_CASE).containsMatchIn(t)) return "链接必须以 http:// 或 https:// 开头"
+    val u = runCatching { URI(t) }.getOrNull()?.takeIf { !it.host.isNullOrEmpty() } ?: return "链接不是有效的 URL。"
     val host = u.host.lowercase(); val path = u.rawPath.orEmpty()
     if (host.startsWith("private-user")) return "Private-user links are not accepted. Use a public image link."
     val ok = IMAGE_EXT.any { path.lowercase().endsWith(it) } ||
@@ -190,7 +190,7 @@ fun explainRejectedImageLink(url: String?): String? {
         host == "raw.githubusercontent.com" || host == "camo.githubusercontent.com" ||
         ((host.endsWith("gitlab.com") || host.endsWith("gitlab.io")) && "/-/raw/" in path) ||
         (host == "codeberg.org" && "/raw/branch/" in path)
-    return if (ok) null else "Only image links are accepted (jpg/png/webp/gif/bmp/avif/svg, Play Store scraped links, or raw GitHub/GitLab/Codeberg/Camo links)."
+    return if (ok) null else "仅接受图像链接（jpg/png/webp/gif/bmp/avif/svg、Play Store 抓取链接或原始 GitHub/GitLab/Codeberg/Camo 链接）。"
 }
 
 private val PLAY_SIZE = Regex("=[swh]\\d+"); private val PLAY_SIZE_TAIL = Regex("=[swh]\\d+[^/]*$")
@@ -218,15 +218,15 @@ fun generateSignature(data: Map<String, Any?>): String =
 data class ChangeField(val key: String, val label: String, val hint: String, val group: String, val kind: String)
 
 private val COMMON_FIELDS = listOf(
-    ChangeField("name", "App name", "Visible title", "Basics", "text"), ChangeField("author", "Developer or author", "Creator credit", "Basics", "text"),
-    ChangeField("description", "Description", "Store description", "Basics", "textarea"), ChangeField("icon", "Icon URL", "Direct image URL", "Media", "url"),
-    ChangeField("screenshots", "Screenshot URLs", "One URL per line", "Media", "urls"), ChangeField("downloadUrl", "Download or source URL", "Working project page", "Source", "url"),
-    ChangeField("repoUrl", "Repository URL", "Main repository or website", "Source", "url"), ChangeField("githubRepo", "GitHub repository", "owner/repo or URL", "Source", "text"),
-    ChangeField("gitlabRepo", "GitLab project", "Group/project or URL", "Source", "text"), ChangeField("codebergRepo", "Codeberg repository", "owner/repo or URL", "Source", "text"),
-    ChangeField("officialSite", "Official website", "Product page", "Source", "url"), ChangeField("category", "Category", "Store category", "Catalog", "text"),
+    ChangeField("name", "应用名称", "可见标题", "Basics", "text"), ChangeField("author", "开发者或作者", "创作者信用", "Basics", "text"),
+    ChangeField("description", "Description", "店铺描述", "Basics", "textarea"), ChangeField("icon", "图标网址", "直接图片网址", "Media", "url"),
+    ChangeField("screenshots", "截图网址", "每行一个 URL", "Media", "urls"), ChangeField("downloadUrl", "下载地址或源地址", "工作项目页面", "Source", "url"),
+    ChangeField("repoUrl", "存储库网址", "主要存储库或网站", "Source", "url"), ChangeField("githubRepo", "GitHub 存储库", "所有者/存储库或 URL", "Source", "text"),
+    ChangeField("gitlabRepo", "GitLab项目", "组/项目或 URL", "Source", "text"), ChangeField("codebergRepo", "Codeberg 存储库", "所有者/存储库或 URL", "Source", "text"),
+    ChangeField("officialSite", "官方网站", "产品页面", "Source", "url"), ChangeField("category", "Category", "店铺类别", "Catalog", "text"),
 )
 fun changeFields(platform: String) = if (platform == Platform.ANDROID) COMMON_FIELDS + listOf(
-    ChangeField("releaseKeyword", "Release asset keyword", "Unique APK filename word", "Android", "text"),
+    ChangeField("releaseKeyword", "发布资产关键字", "唯一的 APK 文件名单词", "Android", "text"),
     ChangeField("packageName", "Android package name", "com.example.app", "Android", "text"),
 ) else COMMON_FIELDS
 
@@ -241,7 +241,7 @@ fun currentFieldValue(app: AppItem, key: String): String = when (key) {
 
 fun urlError(v: String): String {
     val t = v.trim()
-    if (t.isEmpty()) return "Enter a valid URL."
+    if (t.isEmpty()) return "输入有效的 URL。"
     val u = runCatching { URI(t) }.getOrNull()?.takeIf { it.scheme != null } ?: return "Use a valid http or https URL."
     return if (u.scheme.lowercase() !in setOf("http", "https")) "Use an http or https URL." else if (u.host.isNullOrEmpty()) "Use a valid http or https URL." else ""
 }
@@ -250,7 +250,7 @@ fun splitUrls(v: String) = v.trim().split(Regex("\n|,")).map { it.trim() }.filte
 
 fun validateChange(f: ChangeField, v: String): String {
     val t = v.trim()
-    if (t.isEmpty()) return "Enter a corrected value."
+    if (t.isEmpty()) return "输入修正值。"
     if (f.kind == "url") return urlError(t)
     if (f.kind == "urls") { val u = splitUrls(t); return if (u.isEmpty()) "Add at least one screenshot URL." else u.firstOrNull { urlError(it).isNotEmpty() }?.let(::urlError) ?: "" }
     if (f.key == "packageName" && !Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)+$").matches(t)) return "Use a valid Android package name."
@@ -267,8 +267,8 @@ fun appUpdateIssueUrl(app: AppItem, fieldLabel: String, current: String, suggest
     val title = "App Update - ${app.name} (${app.platform})"
     val body = listOf(
         "### App Update Request", "", "- App ID: `${app.id}`", "- Platform: **${app.platform}**", "- Field: **$fieldLabel**", "- Current value: ${current.take(500)}", "",
-        "### Suggested value", "```text", suggested.trim().take(4000).ifEmpty { "(described in reason)" }, "```", "",
-        "### Reason", reason.trim().ifEmpty { "No additional details provided." }, "",
+        "### Suggested value", "```text", suggested.trim().take(4000).ifEmpty { "（说明理由）" }, "```", "",
+        "### Reason", reason.trim().ifEmpty { "没有提供更多详细信息。" }, "",
         reference.trim().let { if (it.isNotEmpty()) "**Evidence:** $it" else "" }, "",
         "### Automation payload", "```json", payloadJson, "```", "",
         "*Apply the `approved` label and run the App Update workflow to merge this change.*",
@@ -316,17 +316,17 @@ data class ForcedVm(
 
 private val FORCED_COPY = mapOf(
     "inactive" to listOf("Standby", "", "", "neutral"),
-    "checking" to listOf("Checking", "Checking for the latest Orion build", "Reaching Orion Store to confirm the newest version.", "progress"),
-    "downloading" to listOf("Downloading", "Downloading the latest Orion build", "The update is being downloaded in the background.", "progress"),
-    "download_failed" to listOf("Retry required", "The download needs another try", "Check your connection and retry the download.", "warning"),
-    "ready_to_scan_or_install" to listOf("Ready", "The update is ready to install", "Review the next step, then install when you are ready.", "success"),
-    "byok_required" to listOf("Scan setup", "A VirusTotal API key is required to scan", "Add your API key in settings to enable scanning before install.", "warning"),
-    "scanning" to listOf("Scanning", "Scanning the update before install", "Verifying the APK with VirusTotal before installation.", "progress"),
-    "scan_complete" to listOf("Scan complete", "The update is ready for install", "The scan is complete and the build is ready to install.", "success"),
-    "installing" to listOf("Installing", "Android is taking over the install", "Continue with the system installer to finish the update.", "progress"),
-    "install_failed" to listOf("Install failed", "The install needs a manual fallback", "Save the APK to Downloads and install it manually from Files.", "warning"),
-    "export_ready" to listOf("Saved", "The APK is saved to your device", "Open the saved APK from Files to continue installation.", "success"),
-    "installed" to listOf("Complete", "Orion Store is up to date", "Reopen Orion Store to continue with the new version.", "success"),
+    "checking" to listOf("Checking", "检查最新的 Orion 版本", "达到Orion Store确认最新版本。", "progress"),
+    "downloading" to listOf("Downloading", "下载最新的 Orion 版本", "正在后台下载更新。", "progress"),
+    "download_failed" to listOf("需要重试", "下载需要再次尝试", "检查您的连接并重试下载。", "warning"),
+    "ready_to_scan_or_install" to listOf("Ready", "更新已准备好安装", "查看下一步，然后在准备好后进行安装。", "success"),
+    "byok_required" to listOf("扫描设置", "扫描时需要 VirusTotal API 密钥", "在设置中添加您的 API 密钥以在安装前启用扫描。", "warning"),
+    "scanning" to listOf("扫描中", "安装前扫描更新", "安装前验证APK与VirusTotal。", "progress"),
+    "scan_complete" to listOf("扫描完成", "更新已准备好安装", "扫描已完成，构建版本已准备好安装。", "success"),
+    "installing" to listOf("Installing", "Android 正在接管安装", "继续系统安装程序以完成更新。", "progress"),
+    "install_failed" to listOf("安装失败", "安装需要手动回退", "将 APK 保存到“下载”并从“文件”手动安装。", "warning"),
+    "export_ready" to listOf("Saved", "APK 已保存到您的设备", "从文件中打开保存的APK继续安装。", "success"),
+    "installed" to listOf("Complete", "Orion Store 已更新", "重新打开 Orion Store 继续使用新版本。", "success"),
 )
 
 fun forcedVm(status: String, errorText: String?, statusText: String?, canScan: Boolean, canInstall: Boolean, exported: Boolean, exportPath: String?, scanProgress: Float, stats: VtStats?): ForcedVm {
@@ -336,7 +336,7 @@ fun forcedVm(status: String, errorText: String?, statusText: String?, canScan: B
         if (status == "byok_required") add(ForcedAction("install", "Skip scan & install", "secondary"))
         if (status == "ready_to_scan_or_install" && canScan) add(ForcedAction("scan", "Scan before install", "secondary"))
         if (status == "scan_complete" && stats != null) add(ForcedAction("open-report", "Open VirusTotal report", "secondary"))
-        if (status in setOf("ready_to_scan_or_install", "scan_complete", "export_ready") && canInstall) add(ForcedAction("install", "Install now", "primary"))
+        if (status in setOf("ready_to_scan_or_install", "scan_complete", "export_ready") && canInstall) add(ForcedAction("install", "立即安装", "primary"))
         if (status == "install_failed") add(if (exported) ForcedAction("export", "Saved to downloads", "outline", false) else ForcedAction("export", "Save APK to downloads", "outline"))
     }
     return ForcedVm(
@@ -348,7 +348,7 @@ fun forcedVm(status: String, errorText: String?, statusText: String?, canScan: B
 // endregion
 
 // region my apps
-enum class MyAppsFilter(val label: String, val icon: String) { ALL("All", "fa-box-archive"), INSTALLED("Installed", "fa-circle-check"), DOWNLOADED("Downloaded", "fa-download"), UPDATES("Updates", "fa-arrow-up") }
+enum class MyAppsFilter(val label: String, val icon: String) { ALL("All", "fa-box-archive"), INSTALLED("已安装", "fa-circle-check"), DOWNLOADED("已下载", "fa-download"), UPDATES("更新", "fa-arrow-up") }
 
 data class MyAppRow(
     val app: AppItem, val status: String, val installedVersion: String?, val lastRemoteVersion: String?, val readyFile: String?, val cleanupFile: String?,
@@ -361,9 +361,9 @@ data class MyAppRow(
         isInstalledNow && hasSavedApk -> "delete"; libraryStatus == "downloaded" -> if (hasSavedApk) "install" else "download"; else -> "view"
     }
     val statusLabel get() = when (status) {
-        "downloading" -> "${Math.round(progress)}%"; "ready" -> "Ready to install"; "update" -> "Update available"
-        "installed" -> if (isInstalledNow) "Installed v$installedVersion" else "Installed previously"
-        else -> if (hasSavedApk) "APK saved" else "Downloaded"
+        "downloading" -> "${Math.round(progress)}%"; "ready" -> "准备安装"; "update" -> "可用更新"
+        "installed" -> if (isInstalledNow) "已安装v$installedVersion" else "之前安装过"
+        else -> if (hasSavedApk) "APK已保存" else "已下载"
     }
     val versionDetail get() = when {
         hasUpdate -> preferredVersion(app).let { l -> if (installedVersion != null) "v$installedVersion → v$l" else "v$l" }
@@ -392,10 +392,10 @@ fun MyAppRow.matchesQuery(q: String) = q.isBlank() || q.trim().lowercase().let {
 
 // region modern storefront helpers
 fun modernSortTitle(sort: SortOption) = when (sort) {
-    SortOption.HOME -> "Home Page" to "More Picks For You"; SortOption.OLDEST -> "Oldest First" to "More Classics"
-    SortOption.NAME_ASC -> "A to Z" to "More A to Z"; SortOption.NAME_DESC -> "Z to A" to "More Z to A"
-    SortOption.SIZE_ASC -> "Smallest Footprint" to "More Lightweight Picks"; SortOption.SIZE_DESC -> "Largest Packages" to "More Heavyweights"
-    else -> "Recently Added" to "More Fresh Picks"
+    SortOption.HOME -> "主页" to "更多精选供您选择"; SortOption.OLDEST -> "最旧的在前" to "更多经典"
+    SortOption.NAME_ASC -> "A 到 Z" to "更多 A 到 Z"; SortOption.NAME_DESC -> "Z 到 A" to "更多 Z 到 A"
+    SortOption.SIZE_ASC -> "最小的占地面积" to "更多轻量级精选"; SortOption.SIZE_DESC -> "最大的包裹" to "更多重量级人物"
+    else -> "最近添加" to "更多新鲜精选"
 }
 
 fun sortedModernCollections(apps: List<AppItem>, sort: SortOption, showAll: Boolean = false): List<StoreCollection> {
@@ -414,7 +414,7 @@ fun displaySort(layout: String, t: TabViewState) = when {
     else -> if (t.sort == SortOption.HOME) SortOption.NEWEST else t.sort
 }
 
-fun updatesCollection(apps: List<AppItem>) = if (apps.isEmpty()) null else StoreCollection("updates-available", "Updates Available", CollectionType.SWIMLANE, apps = apps.take(12), totalAppCount = apps.size)
+fun updatesCollection(apps: List<AppItem>) = if (apps.isEmpty()) null else StoreCollection("updates-available", "可用更新", CollectionType.SWIMLANE, apps = apps.take(12), totalAppCount = apps.size)
 
 fun injectAfterHero(cols: List<StoreCollection>, inj: StoreCollection?): List<StoreCollection> {
     inj ?: return cols
@@ -533,10 +533,10 @@ object Xp {
     }
     fun start(level: Int) = (1 until level).sumOf { step(it) }
     fun level(xp: Long): Int { var l = 1; var left = xp; while (left >= step(l)) { left -= step(l); l++ }; return l }
-    fun title(level: Int) = when { level >= 50 -> "Gold pilot"; level >= 30 -> "Silver pilot"; level >= 10 -> "Bronze pilot"; else -> "Cadet" }
+    fun title(level: Int) = when { level >= 50 -> "金牌飞行员"; level >= 30 -> "银牌飞行员"; level >= 10 -> "铜牌飞行员"; else -> "学员" }
 }
 /** Pilot card tiers and the badge each one awards. */
-val TIER_BADGES = listOf(10 to "Bronze Wings", 30 to "Silver Wings", 50 to "Gold Wings")
+val TIER_BADGES = listOf(10 to "青铜之翼", 30 to "银翼", 50 to "金翼")
 
 // region release notes, straight from GitHub Releases
 /** One release boiled down for the What's new sheet: its section titles and one short headline per bullet. */

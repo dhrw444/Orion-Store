@@ -5,11 +5,11 @@ import kotlinx.serialization.json.Json
 
 val json = Json { ignoreUnknownKeys = true; coerceInputValues = true; explicitNulls = false; isLenient = true; encodeDefaults = true }
 
-object Platform { const val ANDROID = "Android"; const val PC = "PC"; const val TV = "TV" }
+object Platform { const val ANDROID = "Android"; const val PC = "PC"; const val TV = "电视" }
 
 enum class SortOption(val label: String) {
-    HOME("Home Page"), NEWEST("Recently Added"), OLDEST("Oldest Added"), NAME_ASC("Name (A-Z)"),
-    NAME_DESC("Name (Z-A)"), SIZE_ASC("Size (Smallest)"), SIZE_DESC("Size (Largest)")
+    HOME("主页"), NEWEST("最近添加"), OLDEST("最旧添加"), NAME_ASC("姓名（A-Z）"),
+    NAME_DESC("姓名（Z-A）"), SIZE_ASC("尺寸（最小）"), SIZE_DESC("尺寸（最大）")
 }
 
 enum class Tab(val platform: String?) { ANDROID(Platform.ANDROID), PC(Platform.PC), TV(Platform.TV), MYAPPS(null), ABOUT(null), UPDATES(null) }
@@ -22,7 +22,7 @@ val STREAMS = listOf("Stable", "Beta", "Alpha", "Nightly")
 
 @Serializable data class AppItem(
     val id: String = "",
-    val name: String = "Unknown App",
+    val name: String = "未知应用",
     val description: String = "",
     val icon: String = "",
     val version: String = "Latest",
@@ -41,7 +41,7 @@ val STREAMS = listOf("Stable", "Beta", "Alpha", "Nightly")
     val tags: List<String> = emptyList(),
     val platform: String = Platform.ANDROID,
     val size: String = "",
-    val author: String = "Unknown",
+    val author: String = "未知",
     val screenshots: List<String> = emptyList(),
     val officialSite: String? = null,
     val patches: List<String> = emptyList(),
@@ -118,19 +118,19 @@ object Defaults {
     val PACKAGE_SUFFIXES = listOf(".preview", ".debug", ".test", ".beta", ".canary", ".dev", ".alpha", ".nightly", ".staging", ".release")
     val FONTS = listOf(
         "spaceGrotesk" to "Space Grotesk", "inter" to "Inter", "poppins" to "Poppins", "manrope" to "Manrope", "outfit" to "Outfit",
-        "dmSans" to "DM Sans", "plusJakartaSans" to "Plus Jakarta Sans", "rubik" to "Rubik", "nunitoSans" to "Nunito Sans",
-        "publicSans" to "Public Sans", "systemDefault" to "System Default",
+        "dmSans" to "DM Sans", "plusJakartaSans" to "加上 Jakarta Sans", "rubik" to "Rubik", "nunitoSans" to "努尼托桑斯",
+        "publicSans" to "公共字体", "systemDefault" to "系统默认值",
     )
     val PTR_CHARACTERS = listOf("cat", "dog", "pokeball", "shield", "owl", "robot", "ghost", "kitty", "bunny", "batman")
     val FAQS = listOf(
-        FAQItem("Why do scanner apps say Orion has trackers?", "Scanner apps like AppManager flag the Unity Ads SDK inside Orion. That SDK exists for exactly one feature: the optional ad-watching in the About tab (Fuel the Code), where watching ads supports me and earns you XP and unlocks badges. No analytics, no data mining, no data selling. The app is open source so anyone can verify it, and ads are 100% optional with nothing running in the background.", "fa-magnifying-glass"),
-        FAQItem("Is Orion Store safe?", "Absolutely. Orion Store is completely open-source. This means our code is public on GitHub for anyone to audit. We believe in transparency: no hidden trackers, no data mining, just a clean gateway to apps.", "fa-shield-cat"),
-        FAQItem("Are apps on Orion safe?", "Yes. I personally review and mod them using tools available on their official repositories to ensure they are safe, functional, and privacy-respecting before they land here.", "fa-check-double"),
-        FAQItem("Are ReVanced builds safe?", "Yes. These builds are automated via GitHub Actions bots, not manually patched. They use the official ReVanced CLI and patches on APKs sourced from APKMirror, Uptodown, and APKPure. The process runs daily at 6 AM. The entire build pipeline is transparent and open-source: https://github.com/RookieEnough/Revanced-AutoBuilds", "fa-robot"),
-        FAQItem("Installation failed?", "If you see 'App not installed' or 'Package conflicts', it's likely a signature mismatch. You cannot install a modded app over the original Play Store version or a different mod. Uninstall the existing app first, then install the one from Orion.", "fa-file-signature"),
-        FAQItem("Download not working?", "Don't panic! Just head to the app's detail page and click the 'Report' icon (⚠️) in the top right corner. It will pre-fill an email so I can fix it ASAP.", "fa-bug"),
-        FAQItem("Will there be more apps?", "Yes, if there'll be more interesting apps to add on. As long as I find open-source or useful tools that deserve a spotlight, the library will keep growing.", "fa-layer-group"),
-        FAQItem("How can I support?", "By donation through ko-fi. Code fuels the store, but coffee fuels the dev! You can find the link in the socials section.", "fa-heart"),
-        FAQItem("Is there any hidden easter egg?", "Where the Architect stares, the secret sleeps.\n\nCount the legs of a spider. Count the vertices of a cube.\n\nStrike the Visage that many times.\n\nThe Golden Truth awaits those who know the rules... and so do I.", "fa-user-secret"),
+        FAQItem("为什么扫描仪应用说 Orion 有追踪器？", "AppManager 等扫描仪应用将 Unity Ads SDK 标记在 Orion 内。该 SDK 的存在正是为了实现一项功能：“关于”选项卡中的可选广告观看（Fuel the Code），观看广告可以为我提供支持，并为您赢得 XP 并解锁徽章。没有分析，没有数据挖掘，没有数据销售。该应用是开源的，因此任何人都可以验证它，广告是 100% 可选的，后台没有运行任何内容。", "fa-magnifying-glass"),
+        FAQItem("Orion Store安全吗？", "绝对地。 Orion Store 完全开源。这意味着我们的代码在 GitHub 上公开，任何人都可以审核。我们相信透明度：没有隐藏的跟踪器，没有数据挖掘，只有一个干净的应用网关。", "fa-shield-cat"),
+        FAQItem("Orion 上的应用安全吗？", "是的。我亲自使用官方存储库上提供的工具对它们进行审查和修改，以确保它们在到达这里之前安全、实用且尊重隐私。", "fa-check-double"),
+        FAQItem("ReVanced 构建安全吗？", "是的。这些构建是通过 GitHub Actions 机器人自动进行的，而不是手动修补。他们使用官方 ReVanced CLI 以及来自 APKMirror、Uptodown 和 APKPure 的 APK 补丁。该流程每天早上 6 点运行。整个构建管道是透明且开源的：https://github.com/RookieEnough/Revanced-AutoBuilds", "fa-robot"),
+        FAQItem("安装失败？", "如果您看到“应用未安装”或“包冲突”，则可能是签名不匹配。您无法在原始 Play Store 版本或其他 mod 上安装修改后的应用。首先卸载现有应用，然后安装 Orion 中的应用。", "fa-file-signature"),
+        FAQItem("下载了不行？", "不要恐慌！只需前往应用的详细信息页面，然后单击右上角的“报告”图标 (⚠️)。它会预先填写一封电子邮件，以便我可以尽快修复它。", "fa-bug"),
+        FAQItem("会有更多应用吗？", "是的，如果有更多有趣的应用可以添加的话。只要我找到值得关注的开源或有用的工具，该库就会不断增长。", "fa-layer-group"),
+        FAQItem("我该如何支持？", "通过 ko-fi 捐赠。代码为商店提供动力，但咖啡为开发提供动力！您可以在社交部分找到该链接。", "fa-heart"),
+        FAQItem("难道还有隐藏的彩蛋吗？", "建筑师凝视的地方，秘密就沉睡着。\n\n数一数蜘蛛的腿。数出立方体的顶点。\n\n多次打击面容。\n\n黄金真理等待着那些了解规则的人……我也是。", "fa-user-secret"),
     )
 }

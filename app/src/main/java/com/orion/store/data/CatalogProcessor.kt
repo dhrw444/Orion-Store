@@ -189,8 +189,8 @@ object CatalogProcessor {
     private fun defaultModules(apps: List<AppItem>, seed: Int): List<ModuleConfig> {
         val s = shuffle(apps, seed + 17).map { it.id }
         return listOf(
-            ModuleConfig("default_category_cards", "category_cards", "Browse by Category", "Swipe the cards, then tap one to show only matching apps", insertAfterCategory = 0.0, animation = "confetti"),
-            ModuleConfig("default_curved_showcase", "curved_apps", "Curated Spotlight", "A quick 6-app mix you should not miss", insertAfterCategory = 2.0, animation = "snowfall", appIds = s.take(6)),
+            ModuleConfig("default_category_cards", "category_cards", "按分类浏览", "左右滑动卡片，点选一张即可只看匹配的应用", insertAfterCategory = 0.0, animation = "confetti"),
+            ModuleConfig("default_curved_showcase", "curved_apps", "精选 Spotlight", "6 款不容错过的应用精选", insertAfterCategory = 2.0, animation = "snowfall", appIds = s.take(6)),
             ModuleConfig("default_recommended_bundles", "recommendation_bundles", "Recommended App Bundles", "Install in packs for faster setup", insertAfterCategory = 4.0, animation = "spark", bundles = listOf(
                 ModuleBundleConfig("default_bundle_daily", "Daily Driver Kit", "Core apps for your everyday workflow", s.subList(0, minOf(3, s.size)), badge = "Starter", icon = "fa-bolt"),
                 ModuleBundleConfig("default_bundle_media", "Media Escape", "Watch, listen, and unwind quickly", s.slice(minOf(3, s.size) until minOf(6, s.size)), badge = "Popular", icon = "fa-photo-film"),
@@ -213,13 +213,13 @@ object CatalogProcessor {
                 val b = m.bundles.orEmpty().mapIndexedNotNull { i, c ->
                     val ap = resolve(c.appIds, map).ifEmpty { return@mapIndexedNotNull null }
                     val title = c.title.ifEmpty { "Bundle ${i + 1}" }
-                    BundleItem(c.id.ifEmpty { "${m.id}-bundle-$i" }, title, c.description?.ifEmpty { null } ?: "Recommended apps", c.appIds, ap, c.color, c.badge, c.icon, c.monogram?.ifEmpty { null } ?: monogram(title))
+                    BundleItem(c.id.ifEmpty { "${m.id}-bundle-$i" }, title, c.description?.ifEmpty { null } ?: "推荐应用", c.appIds, ap, c.color, c.badge, c.icon, c.monogram?.ifEmpty { null } ?: monogram(title))
                 }.ifEmpty {
                     val src = resolve(m.appIds, map).ifEmpty { shuffle(apps, seed + index + 67).take(9) }
                     (0..2).mapNotNull { i ->
                         val ch = src.drop(i * 3).take(3).takeIf { it.size >= 2 } ?: return@mapNotNull null
                         BundleItem("${m.id}-bundle-$i", "Recommended Pack ${i + 1}", "Hand-picked apps that work great together", ch.map { it.id }, ch, null,
-                            listOf("Hot", "Fresh", "Classic")[i], listOf("fa-wand-magic-sparkles", "fa-headphones", "fa-rocket")[i], monogram("Recommended Pack ${i + 1}"))
+                            listOf("Hot", "Fresh", "经典")[i], listOf("fa-wand-magic-sparkles", "fa-headphones", "fa-rocket")[i], monogram("Recommended Pack ${i + 1}"))
                     }
                 }
                 b.takeIf { it.isNotEmpty() }?.let { ins to StoreCollection(m.id, m.title, CollectionType.RECOMMENDATION_BUNDLES, m.subtitle, animation = an, bundles = it) }
@@ -235,20 +235,20 @@ object CatalogProcessor {
         val byCat = LinkedHashMap<String, MutableList<AppItem>>(); val byTag = LinkedHashMap<String, MutableList<AppItem>>()
         apps.forEach { a -> if (a.category != "All") byCat.getOrPut(a.category) { mutableListOf() } += a; a.tags.forEach { byTag.getOrPut(it) { mutableListOf() } += a } }
         val out = mutableListOf(
-            StoreCollection("hero_daily", "Featured Today", CollectionType.HERO, apps = shuffle(apps, seed).take(5)),
-            StoreCollection("recommended_daily", "Recommended For You", CollectionType.SWIMLANE, apps = shuffle(apps, seed + 1).take(10)),
-            StoreCollection("new_updated", "New & Updated", CollectionType.SWIMLANE, apps = apps.reversed().take(12), totalAppCount = minOf(apps.size, 18)),
+            StoreCollection("hero_daily", "今日精选", CollectionType.HERO, apps = shuffle(apps, seed).take(5)),
+            StoreCollection("recommended_daily", "为您推荐", CollectionType.SWIMLANE, apps = shuffle(apps, seed + 1).take(10)),
+            StoreCollection("new_updated", "新上架与近期更新", CollectionType.SWIMLANE, apps = apps.reversed().take(12), totalAppCount = minOf(apps.size, 18)),
         )
-        val rows = byCat.filter { it.value.size >= 3 }.map { (c, l) -> StoreCollection("cat_${c.lowercase()}", "Top in $c", CollectionType.SWIMLANE, filter = c, apps = l.take(12)) }
+        val rows = byCat.filter { it.value.size >= 3 }.map { (c, l) -> StoreCollection("cat_${c.lowercase()}", "$c 排行第一", CollectionType.SWIMLANE, filter = c, apps = l.take(12)) }
         var active = modules.filter { forPlatform(it, platform) && it.type != "update_pills" }.ifEmpty { defaultModules(apps, seed) }
-        if (active.none { it.type == "category_cards" }) active = listOf(ModuleConfig("default_category_cards_${platform.lowercase()}", "category_cards", "Browse by Category",
-            "Swipe the cards, then tap one to show only matching apps", insertAfterCategory = 0.0, animation = "confetti")) + active
+        if (active.none { it.type == "category_cards" }) active = listOf(ModuleConfig("default_category_cards_${platform.lowercase()}", "category_cards", "按分类浏览",
+            "左右滑动卡片，点选一张即可只看匹配的应用", insertAfterCategory = 0.0, animation = "confetti")) + active
         val inter = active.filter { forPlatform(it, platform) }.mapIndexedNotNull { i, m -> interlude(m, i, apps, map, seed) }.sortedBy { it.first }
         var ii = 0
         while (ii < inter.size && inter[ii].first <= 0) out += inter[ii++].second
         rows.forEachIndexed { n, r -> out += r; while (ii < inter.size && n + 1 >= inter[ii].first) out += inter[ii++].second }
         while (ii < inter.size) out += inter[ii++].second
-        shuffle(byTag.keys.toList(), seed + 2).take(2).forEach { t -> byTag.getValue(t).takeIf { it.size >= 3 }?.let { out += StoreCollection("tag_${t.lowercase()}", "Curated: $t", CollectionType.SWIMLANE, filter = t, apps = it.take(12)) } }
+        shuffle(byTag.keys.toList(), seed + 2).take(2).forEach { t -> byTag.getValue(t).takeIf { it.size >= 3 }?.let { out += StoreCollection("tag_${t.lowercase()}", "精选合集：$t", CollectionType.SWIMLANE, filter = t, apps = it.take(12)) } }
         return out
     }
     // endregion

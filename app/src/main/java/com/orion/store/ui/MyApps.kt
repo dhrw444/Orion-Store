@@ -27,7 +27,7 @@ private fun filterIcon(f: MyAppsFilter) = when (f) {
     MyAppsFilter.ALL -> Sym.Inventory2; MyAppsFilter.INSTALLED -> Sym.CheckCircle
     MyAppsFilter.DOWNLOADED -> Sym.Download; MyAppsFilter.UPDATES -> Sym.ArrowUpward
 }
-private val EMPTY = mapOf(MyAppsFilter.ALL to "No apps yet", MyAppsFilter.INSTALLED to "No installed apps", MyAppsFilter.DOWNLOADED to "No downloaded apps", MyAppsFilter.UPDATES to "No pending updates")
+private val EMPTY = mapOf(MyAppsFilter.ALL to "还没有应用", MyAppsFilter.INSTALLED to "没有安装的应用", MyAppsFilter.DOWNLOADED to "没有下载的应用", MyAppsFilter.UPDATES to "没有待处理的更新")
 
 @Composable
 private fun tone(r: MyAppRow): Pair<ImageVector, Color> = when {
@@ -55,7 +55,7 @@ fun MyAppsTab(vm: MainViewModel, padding: PaddingValues) {
             LazyRow(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 item {
                     FilledTonalButton({ vm.haptic(H.SELECTION); vm.openSettings("queue") }, shapes = ButtonDefaults.shapes(), contentPadding = ButtonDefaults.SmallContentPadding) {
-                        Icon(Sym.Downloading, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Queue")
+                        Icon(Sym.Downloading, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("队列")
                         if (queue > 0) { Spacer(Modifier.width(6.dp)); Badge { Text("$queue") } }
                     }
                 }
@@ -70,8 +70,8 @@ fun MyAppsTab(vm: MainViewModel, padding: PaddingValues) {
         else if (visible.isEmpty()) item {
             if (query.isNotBlank()) Column(Modifier.fillMaxWidth().padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Sym.SearchOff, null, Modifier.size(48.dp), tint = cs.onSurfaceVariant)
-                Text("No apps matching “$query”", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleMedium)
-                TextButton({ vm.libraryQuery = "" }) { Text("Clear search") }
+                Text("没有匹配“$query”的应用", Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleMedium)
+                TextButton({ vm.libraryQuery = "" }) { Text("清除搜索") }
             } else EmptyState(filterIcon(filter), EMPTY.getValue(filter), if (filter == MyAppsFilter.ALL) "Apps you download from Orion show up here." else null, Modifier.padding(top = 32.dp))
         }
         itemsIndexed(visible, key = { _, it -> it.app.id }) { i, r -> LibraryRow(vm, r, Modifier.animateItem().reveal(i)) }
@@ -80,7 +80,7 @@ fun MyAppsTab(vm: MainViewModel, padding: PaddingValues) {
         val ignored = if (filter == MyAppsFilter.ALL || filter == MyAppsFilter.UPDATES)
             s.ignoredUpdates.keys.mapNotNull { id -> vm.allApps().firstOrNull { it.id == id }?.takeIf { isUpdateIgnored(it, s, now) } } else emptyList()
         if (ignored.isNotEmpty()) item("ignored-title") {
-            Text("Ignored updates · ${ignored.size}", Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMediumEmphasized)
+            Text("忽略更新 · ${ignored.size}", Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleMediumEmphasized)
         }
         itemsIndexed(ignored, key = { _, a -> "ignored-${a.id}" }) { i, a ->
             val until = when (s.ignoredUpdates[a.id]?.type) { "week" -> "Hidden for a week"; "version" -> "Hidden until the next version"; else -> "Hidden for good" }
@@ -88,7 +88,7 @@ fun MyAppsTab(vm: MainViewModel, padding: PaddingValues) {
                 Modifier.animateItem().padding(horizontal = 16.dp).padding(bottom = 2.dp).clip(rowShape(i, ignored.size)).clickable { vm.selectApp(a) },
                 supportingContent = { Text(until) }, leadingContent = { AppIcon(a, 44.dp) },
                 trailingContent = { FilledTonalButton({ vm.set { it.copy(ignoredUpdates = it.ignoredUpdates - a.id) }; vm.haptic(H.SUCCESS) }, shapes = ButtonDefaults.shapes(),
-                    contentPadding = ButtonDefaults.SmallContentPadding) { Text("Unignore") } },
+                    contentPadding = ButtonDefaults.SmallContentPadding) { Text("取消忽略") } },
                 colors = ListItemDefaults.colors(containerColor = cs.surfaceContainer))
         }
     }
@@ -103,23 +103,23 @@ private fun LibraryRow(vm: MainViewModel, r: MyAppRow, modifier: Modifier) {
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(r.app.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${r.app.author} · ${r.app.platform} · ${r.versionDetail}", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("${r.app.author}·${r.app.platform}·${r.versionDetail}", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, null, Modifier.size(14.dp), tint = c); Spacer(Modifier.width(4.dp))
                     Text(r.statusLabel, style = MaterialTheme.typography.labelMedium, color = c, maxLines = 1)
                 }
             }
             val action = r.primaryAction
-            if (r.hasSavedApk && action in setOf("install", "update", "download")) IconButton({ vm.deleteLibraryApk(r.app) }) { Icon(Sym.DeleteOutline, "Delete APK") }
+            if (r.hasSavedApk && action in setOf("install", "update", "download")) IconButton({ vm.deleteLibraryApk(r.app) }) { Icon(Sym.DeleteOutline, "删除 APK") }
             @Composable fun Primary(label: String, onClick: () -> Unit) =
                 FilledTonalButton(onClick, shapes = ButtonDefaults.shapes(), contentPadding = ButtonDefaults.SmallContentPadding) { Text(label) }
             when {
-                r.status == "downloading" -> FilledTonalIconButton({ vm.cancelDownload(r.app.id) }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.Close, "Cancel download") }
-                action == "install" -> Primary("Install") { r.savedFile?.let { vm.installFile(r.app, it) } }
-                action == "update" -> Primary("Update") { vm.download(r.app) }
-                action == "download" -> Primary("Download") { vm.download(r.app) }
-                action == "delete" -> IconButton({ vm.deleteLibraryApk(r.app) }) { Icon(Sym.DeleteOutline, "Delete APK") }
-                else -> Icon(Sym.ChevronRight, "Open details", tint = cs.onSurfaceVariant)
+                r.status == "downloading" -> FilledTonalIconButton({ vm.cancelDownload(r.app.id) }, shapes = IconButtonDefaults.shapes()) { Icon(Sym.Close, "取消下载") }
+                action == "install" -> Primary("安装") { r.savedFile?.let { vm.installFile(r.app, it) } }
+                action == "update" -> Primary("更新") { vm.download(r.app) }
+                action == "download" -> Primary("下载") { vm.download(r.app) }
+                action == "delete" -> IconButton({ vm.deleteLibraryApk(r.app) }) { Icon(Sym.DeleteOutline, "删除 APK") }
+                else -> Icon(Sym.ChevronRight, "打开详情", tint = cs.onSurfaceVariant)
             }
         }
         if (r.status == "downloading") Row(Modifier.padding(start = 68.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {

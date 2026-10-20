@@ -124,8 +124,8 @@ import kotlin.math.max
     fun adBlockReason(now: Long): String? {
         val recent = adStamps.filter { now - it < Xp.DAY_MS }
         return when {
-            recent.size >= Xp.AD_DAILY -> "You've fueled the code ${Xp.AD_DAILY} times today. Come back tomorrow, pilot."
-            recent.any { now - it < Xp.AD_GAP_MS } -> "Catch your breath. The next mission opens in a few seconds."
+            recent.size >= Xp.AD_DAILY -> "您今天已为代码加油${Xp.AD_DAILY} 次。明天回来吧，飞行员。"
+            recent.any { now - it < Xp.AD_GAP_MS } -> "屏住呼吸。下一个任务将在几秒钟后开始。"
             else -> null
         }
     }

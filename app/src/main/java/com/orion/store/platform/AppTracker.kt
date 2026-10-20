@@ -171,7 +171,7 @@ class AppTracker(private val ctx: Context) {
     suspend fun requestElevated() {
         if (root) return
         try {
-            if (!Shizuku.pingBinder()) throw NativeError("Shizuku is NOT running. Start Shizuku app first.")
+            if (!Shizuku.pingBinder()) throw NativeError("Shizuku 未运行。首先启动Shizuku应用。")
             if (Shizuku.checkSelfPermission() == GRANTED) return
             val ok = suspendCancellableCoroutine { c ->
                 val l = object : Shizuku.OnRequestPermissionResultListener {
@@ -183,8 +183,8 @@ class AppTracker(private val ctx: Context) {
                 Shizuku.addRequestPermissionResultListener(l); Shizuku.requestPermission(SHIZUKU_CODE)
                 c.invokeOnCancellation { Shizuku.removeRequestPermissionResultListener(l) }
             }
-            if (!ok) throw NativeError("User denied Shizuku permission.")
-        } catch (e: NativeError) { throw e } catch (e: Throwable) { throw NativeError("Shizuku Error (Check Manifest/Provider): ${e.message}") }
+            if (!ok) throw NativeError("用户拒绝了 Shizuku 权限。")
+        } catch (e: NativeError) { throw e } catch (e: Throwable) { throw NativeError("Shizuku 错误（检查清单/提供商）：${e.message}") }
     }
 
     private fun sh(cmd: String): Process = if (root) Runtime.getRuntime().exec(arrayOf("su", "-c", cmd)) else Shizuku::class.java
@@ -195,7 +195,7 @@ class AppTracker(private val ctx: Context) {
 
     private fun requireShizuku() {
         if (root) return
-        if (!shizukuRunning()) throw NativeError("Shizuku not running")
+        if (!shizukuRunning()) throw NativeError("Shizuku 未运行")
         if (Shizuku.checkSelfPermission() != GRANTED) throw NativeError("Shizuku permission missing")
     }
 
@@ -216,7 +216,7 @@ class AppTracker(private val ctx: Context) {
 
     /** Root: reinstalls an app's own APKs with Orion as installer. Same signature and version, so data stays; Orion then owns its updates. */
     suspend fun adopt(pkg: String) = withContext(Dispatchers.IO) {
-        val dir = File(pm.getApplicationInfo(pkg, 0).sourceDir).parent ?: throw NativeError("No APK path")
+        val dir = File(pm.getApplicationInfo(pkg, 0).sourceDir).parent ?: throw NativeError("无APK路径")
         val p = sh("pm install -r -i ${ctx.packageName} \"$dir\"/*.apk")
         val code = p.waitFor(); if (code != 0) throw NativeError("Adopt failed (Code $code): ${p.err()}")
     }
@@ -257,7 +257,7 @@ class AppTracker(private val ctx: Context) {
 
     suspend fun toggleSystemApp(pkg: String, enable: Boolean) = withContext(Dispatchers.IO) {
         requireShizuku()
-        val p = sh(if (enable) "cmd package install-existing $pkg" else "pm uninstall -k --user 0 $pkg")
+        val p = sh(if (enable) "cmd 包安装-现有 $pkg" else "pm uninstall -k --user 0 $pkg")
         val exit = p.waitFor(); if (exit != 0) throw NativeError("Operation failed (Code $exit): ${p.err()}")
     }
 
@@ -276,12 +276,12 @@ class AppTracker(private val ctx: Context) {
             // Note: falls back to app-private Downloads when public storage is not writable (scoped storage), path stays readable for hashing
             val out = runCatching { File(ai.sourceDir).copyTo(dest, true) }.getOrElse { File(ai.sourceDir).copyTo(File(Downloads.dir(), name), true) }
             out.absolutePath
-        } catch (e: Exception) { throw NativeError("Extraction failed: ${e.message}") }
+        } catch (e: Exception) { throw NativeError("提取失败：${e.message}") }
     }
 
     fun hash(path: String): String {
-        val f = File(path); if (!f.exists()) throw NativeError("File not found")
-        return hashOrNull(f) ?: throw NativeError("Hash failed")
+        val f = File(path); if (!f.exists()) throw NativeError("找不到文件")
+        return hashOrNull(f) ?: throw NativeError("哈希失败")
     }
 
     private fun hashOrNull(f: File): String? = runCatching {
@@ -292,7 +292,7 @@ class AppTracker(private val ctx: Context) {
 
     /** Returns (httpStatus, body), mirrors uploadVirusTotalFile including the 32 MB upload_url hop. */
     suspend fun vtUpload(path: String, apiKey: String): Pair<Int, String> = withContext(Dispatchers.IO) {
-        if (path.isEmpty() || apiKey.isEmpty()) throw NativeError("Missing args")
+        if (path.isEmpty() || apiKey.isEmpty()) throw NativeError("缺少参数")
         val f = File(path).canonicalFile; if (!f.exists() || !f.canRead()) throw NativeError("FILE_MISSING")
         var uploadUrl = "https://www.virustotal.com/api/v3/files"
         if (f.length() >= 32L * 1024 * 1024) {
@@ -300,17 +300,17 @@ class AppTracker(private val ctx: Context) {
             try {
                 c.newCall(Request.Builder().url("https://www.virustotal.com/api/v3/files/upload_url").header("x-apikey", apiKey).header("Accept", "application/json").build()).execute().use { r ->
                     val b = r.body.string()
-                    if (!r.isSuccessful) return@withContext r.code to b.ifEmpty { "Failed to retrieve upload URL" }
+                    if (!r.isSuccessful) return@withContext r.code to b.ifEmpty { "检索上传 URL 失败" }
                     uploadUrl = com.orion.store.data.json.parseToJsonElement(b).jsonObject["data"]!!.jsonPrimitive.content
                 }
-            } catch (e: Exception) { throw NativeError("Failed to obtain VirusTotal upload URL: ${e.message}") }
+            } catch (e: Exception) { throw NativeError("获取VirusTotal上传网址失败：${e.message}") }
         }
         val c = Net.client.newBuilder().callTimeout(0, TimeUnit.MILLISECONDS).connectTimeout(30, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS).writeTimeout(0, TimeUnit.MILLISECONDS).build()
         val body = MultipartBody.Builder("----orionvt" + System.currentTimeMillis()).setType(MultipartBody.FORM)
             .addFormDataPart("file", f.name, f.asRequestBody(APK_MIME.toMediaType())).build()
         try {
             c.newCall(Request.Builder().url(uploadUrl).post(body).header("x-apikey", apiKey).header("Accept", "application/json").build()).execute().use { it.code to it.body.string() }
-        } catch (e: Exception) { throw NativeError(e.message ?: "Upload failed") }
+        } catch (e: Exception) { throw NativeError(e.message ?: "上传失败") }
     }
 
     /** Walks shared storage hashing files over 1 KB, emitting batches of 50 (scanResultBatch / scanComplete). */
@@ -362,7 +362,7 @@ class AppTracker(private val ctx: Context) {
     @Suppress("DEPRECATION")
     suspend fun exportFile(name: String): String = withContext(Dispatchers.IO) {
         val src = Downloads.file(name) ?: throw NativeError("INVALID_FILE_NAME")
-        if (!src.exists()) throw NativeError("File not found")
+        if (!src.exists()) throw NativeError("找不到文件")
         try {
             val pub = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).apply { mkdirs() }
             val dot = name.lastIndexOf('.'); val stem = if (dot > 0) name.take(dot) else name; val ext = if (dot > 0) name.substring(dot) else ""
@@ -371,14 +371,14 @@ class AppTracker(private val ctx: Context) {
             src.copyTo(dest)
             if (dest.length() != src.length()) throw NativeError("Verification failed")
             src.delete(); dest.absolutePath
-        } catch (e: NativeError) { throw e } catch (e: Exception) { throw NativeError("Export failed: ${e.message}") }
+        } catch (e: NativeError) { throw e } catch (e: Exception) { throw NativeError("导出失败：${e.message}") }
     }
 
     suspend fun saveFile(content: String, fileName: String) {
         val i = Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/octet-stream").putExtra(Intent.EXTRA_TITLE, fileName)
         val (code, data) = ResultHost.run(i)
         val uri: Uri = data?.data?.takeIf { code == Activity.RESULT_OK } ?: throw NativeError("Cancelled")
-        withContext(Dispatchers.IO) { (ctx.contentResolver.openOutputStream(uri) ?: throw NativeError("Stream error")).use { it.write(content.toByteArray()) } }
+        withContext(Dispatchers.IO) { (ctx.contentResolver.openOutputStream(uri) ?: throw NativeError("码流错误")).use { it.write(content.toByteArray()) } }
     }
 
     fun setHighRefreshRate(a: Activity, enable: Boolean) {
@@ -395,7 +395,7 @@ class AppTracker(private val ctx: Context) {
     fun share(title: String, text: String, url: String) = ctx.startActivity(
         Intent.createChooser(Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, "$text $url").setType("text/plain"), title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 
-    fun launch(pkg: String) = ctx.startActivity((pm.getLaunchIntentForPackage(pkg) ?: throw NativeError("App not found")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    fun launch(pkg: String) = ctx.startActivity((pm.getLaunchIntentForPackage(pkg) ?: throw NativeError("找不到应用")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     fun uninstall(pkg: String) = ctx.startActivity(Intent(Intent.ACTION_DELETE, "package:$pkg".toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     fun open(url: String) = runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
 

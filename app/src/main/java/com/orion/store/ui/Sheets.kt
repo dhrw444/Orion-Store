@@ -106,29 +106,29 @@ fun AppPickerList(pool: List<AppItem>, platform: String, modifier: Modifier = Mo
     val shown = filtered.take(limit); val left = filtered.size - shown.size
     LazyColumn(modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
         item {
-            OutlinedTextField(q, { q = it; limit = 20 }, Modifier.fillMaxWidth(), placeholder = { Text("Search $platform apps...") }, singleLine = true, shape = RoundedCornerShape(28.dp),
+            OutlinedTextField(q, { q = it; limit = 20 }, Modifier.fillMaxWidth(), placeholder = { Text("搜索$platform应用...") }, singleLine = true, shape = RoundedCornerShape(28.dp),
                 leadingIcon = { Icon(Sym.Search, null) },
-                trailingIcon = { if (q.isNotEmpty()) IconButton({ q = ""; limit = 20 }) { Icon(Sym.Close, "Clear search") } })
+                trailingIcon = { if (q.isNotEmpty()) IconButton({ q = ""; limit = 20 }) { Icon(Sym.Close, "清除搜索") } })
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 (listOf("All" to pool.size) + cats.toList()).forEach { (k, n) ->
                     FilterChip(cat == k, { cat = k; limit = 20 }, { Text("$k ($n)") }, leadingIcon = if (cat == k) ({ Icon(Sym.Check, null, Modifier.size(18.dp)) }) else null)
                 }
             }
-            Text(status?.invoke(shown.size, filtered.size) ?: "Showing ${shown.size}/${filtered.size}", Modifier.padding(start = 4.dp, bottom = 8.dp), style = ty.labelMedium, color = cs.onSurfaceVariant)
+            Text(status?.invoke(shown.size, filtered.size) ?: "显示${shown.size}/${filtered.size}", Modifier.padding(start = 4.dp, bottom = 8.dp), style = ty.labelMedium, color = cs.onSurfaceVariant)
         }
-        if (filtered.isEmpty()) item { EmptyState(Sym.SearchOff, "No apps match.") }
+        if (filtered.isEmpty()) item { EmptyState(Sym.SearchOff, "没有匹配的应用。") }
         itemsIndexed(shown, key = { _, a -> a.id }) { i, a ->
             val on = a.id in selected
             GroupItem(i, shown.size, selected = on, onClick = { onPick(a) }) {
                 ListItem({ Text(a.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = if (on) ty.titleMediumEmphasized else ty.titleMedium) },
-                    supportingContent = { Text("${a.category} · ${a.author}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    supportingContent = { Text("${a.category}·${a.author}", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     leadingContent = { AppIcon(a, 40.dp) },
                     trailingContent = { Icon(if (on) Sym.CheckCircle else Sym.AddCircleOutline, null, tint = if (on) cs.primary else cs.onSurfaceVariant) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent))
             }
         }
         if (left > 0) item {
-            FilledTonalButton({ limit += 20 }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shapes = ButtonDefaults.shapes()) { Text("Load ${min(20, left)} more ($left left)") }
+            FilledTonalButton({ limit += 20 }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp), shapes = ButtonDefaults.shapes()) { Text("加载${min(20, left)} 更多（$left 剩余）") }
         }
     }
 }
@@ -142,9 +142,9 @@ fun NoticeSheet(vm: MainViewModel, onDismiss: () -> Unit) {
     OrionSheet(onDismiss) {
         val close = LocalSheetClose.current
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
-            Lead(n.title, n.message, "Notice", center = true) { Blob(Sym.Campaign, cs.primary, 80, MaterialShapes.Sunny) }
+            Lead(n.title, n.message, "通知", center = true) { Blob(Sym.Campaign, cs.primary, 80, MaterialShapes.Sunny) }
             Spacer(Modifier.height(16.dp))
-            CtaButton("Got it", close, icon = Sym.Check)
+            CtaButton("知道了", close, icon = Sym.Check)
         }
     }
 }
@@ -155,7 +155,7 @@ fun NoticeSheet(vm: MainViewModel, onDismiss: () -> Unit) {
 fun FaqSheet(vm: MainViewModel, onDismiss: () -> Unit) = OrionSheet(onDismiss) {
     val faqs = vm.config?.faqs?.takeIf { it.isNotEmpty() } ?: Defaults.FAQS
     var open by rememberSaveable { mutableIntStateOf(-1) }
-    SheetTitle("FAQs", Sym.HelpOutline, "Common questions & secrets")
+    SheetTitle("常见问题", Sym.HelpOutline, "常见问题和秘密")
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp)) {
         itemsIndexed(faqs) { i, f ->
             val on = open == i
@@ -193,14 +193,14 @@ fun ReleaseNotesSheet(vm: MainViewModel, onDismiss: () -> Unit) = OrionSheet(onD
             releases = parseReleases(raw); withContext(Dispatchers.IO) { f.writeText(raw) }
         }.onFailure { if (releases == null) failed = true }
     }
-    SheetTitle("What's new", Sym.NewReleases, "Straight from Orion's releases")
+    SheetTitle("什么是新的", Sym.NewReleases, "直接来自 Orion 的发行版")
     val list = releases
     LazyColumn(Modifier.fillMaxWidth(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         when {
             list == null && !failed -> items(2) { Skeleton(Modifier.fillMaxWidth().height(140.dp)) }
             list.isNullOrEmpty() -> item {
-                EmptyState(Sym.CloudOff, "Can't reach GitHub", "Release notes load once you're online.")
-                TextButton({ vm.tracker.open("https://github.com/RookieEnough/Orion-Store/releases") }, Modifier.fillMaxWidth()) { Text("Open releases on GitHub") }
+                EmptyState(Sym.CloudOff, "无法到达GitHub", "上线后即会加载发行说明。")
+                TextButton({ vm.tracker.open("https://github.com/RookieEnough/Orion-Store/releases") }, Modifier.fillMaxWidth()) { Text("在 GitHub 打开 Releases") }
             }
             else -> itemsIndexed(list, key = { _, r -> r.version }) { i, r ->
                 ReleaseCard(vm, r, latest = i == 0, expanded = (open ?: list[0].version) == r.version) { open = if ((open ?: list[0].version) == r.version) "" else r.version }
@@ -218,12 +218,12 @@ private fun ReleaseCard(vm: MainViewModel, r: Release, latest: Boolean, expanded
         Column(Modifier.fillMaxWidth().animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec()).padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("v${r.version}", Modifier.weight(1f), style = ty.titleLargeEmphasized)
-                if (installed) Tag("Installed", if (latest) cs.primary else Safe) else if (latest) Tag("Latest", cs.primary)
+                if (installed) Tag("已安装", if (latest) cs.primary else Safe) else if (latest) Tag("Latest", cs.primary)
             }
             if (r.name.isNotEmpty()) Text(r.name, style = ty.titleMedium, fontWeight = FontWeight.SemiBold)
             val count = r.sections.sumOf { it.items.size }
             val whenText = if (r.publishedAt > 0) android.text.format.DateUtils.getRelativeTimeSpanString(r.publishedAt).toString() else ""
-            Text(listOf(whenText, if (count > 0) "$count changes" else "").filter { it.isNotEmpty() }.joinToString(" · "), style = ty.labelMedium, color = fg.copy(.7f))
+            Text(listOf(whenText, if (count > 0) "$count变化" else "").filter { it.isNotEmpty() }.joinToString(" · "), style = ty.labelMedium, color = fg.copy(.7f))
             if (expanded) {
                 r.sections.forEach { sec ->
                     if (sec.title.isNotEmpty()) Text(sec.title, Modifier.padding(top = 16.dp, bottom = 4.dp), style = ty.titleSmallEmphasized, color = cs.primary)
@@ -235,7 +235,7 @@ private fun ReleaseCard(vm: MainViewModel, r: Release, latest: Boolean, expanded
                         }
                     }
                 }
-                if (r.url.isNotEmpty()) TextButton({ vm.tracker.open(r.url) }, Modifier.padding(top = 8.dp)) { Text("Full notes on GitHub"); Spacer(Modifier.width(6.dp)); Icon(Sym.OpenInNew, null, Modifier.size(16.dp)) }
+                if (r.url.isNotEmpty()) TextButton({ vm.tracker.open(r.url) }, Modifier.padding(top = 8.dp)) { Text("GitHub 的完整注释"); Spacer(Modifier.width(6.dp)); Icon(Sym.OpenInNew, null, Modifier.size(16.dp)) }
             }
         }
     }
@@ -247,15 +247,15 @@ private data class Step(val icon: ImageVector, val title: String, val body: Stri
 
 private val HERO_SHAPES = listOf(MaterialShapes.Cookie9Sided, MaterialShapes.Sunny, MaterialShapes.Clover4Leaf, MaterialShapes.SoftBurst, MaterialShapes.Cookie12Sided)
 private val UI_STEPS = listOf(
-    Step(Sym.AutoAwesome, "Try New UI", "Orion has a fresh Modern UI with curated collections, hero carousels, and a beautiful new layout."),
-    Step(Sym.Settings, "Open Settings", "Tap the gear icon in the top right corner"),
-    Step(Sym.Palette, "Go to Interface", "Find the Interface section in settings"),
-    Step(Sym.ToggleOn, "Enable Modern UI", "Toggle on \"Modern UI\" to unlock the new layout"),
+    Step(Sym.AutoAwesome, "尝试新用户界面", "Orion 拥有全新的现代用户界面，包含精心策划的收藏、英雄轮播和漂亮的新布局。"),
+    Step(Sym.Settings, "打开设置", "点击右上角的齿轮图标"),
+    Step(Sym.Palette, "进入界面", "在设置中找到界面部分"),
+    Step(Sym.ToggleOn, "启用现代 UI", "切换“现代 UI”以解锁新布局"),
 )
 private val TOUR_STEPS = listOf(
-    Step(Sym.Terminal, "Developer Menu", "Tap the Dev tab to see what's new under the hood."),
-    Step(Sym.VolunteerActivism, "Support Orion", "We've added new ways to donate. Check them out!"),
-    Step(Sym.Favorite, "Thank You!", "You can now support Orion via Ko-fi, UPI, or PayPal."),
+    Step(Sym.Terminal, "开发者菜单", "点击“开发”选项卡即可查看底层的新增内容。"),
+    Step(Sym.VolunteerActivism, "支持Orion", "我们添加了新的捐赠方式。检查一下！"),
+    Step(Sym.Favorite, "谢谢你！", "您现在可以通过 Ko-fi、UPI 或 PayPal 支持 Orion。"),
 )
 
 /** Hero moment: the container morphs to a new MaterialShape and turns a quarter on every step. */
@@ -308,17 +308,17 @@ private fun ModernUiSheet(vm: MainViewModel, onDismiss: () -> Unit) {
         Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             when (step) {
                 0 -> {
-                    CtaButton("Enable Now", now, icon = Sym.Bolt)
-                    CtaButton("How to Enable", { step = 1; vm.haptic(H.SELECTION) }, icon = Sym.Lightbulb, tonal = true)
-                    TextButton(close, Modifier.fillMaxWidth()) { Text("Skip") }
+                    CtaButton("立即启用", now, icon = Sym.Bolt)
+                    CtaButton("如何启用", { step = 1; vm.haptic(H.SELECTION) }, icon = Sym.Lightbulb, tonal = true)
+                    TextButton(close, Modifier.fillMaxWidth()) { Text("跳过") }
                 }
                 UI_STEPS.lastIndex -> {
-                    CtaButton("Enable Now", now, icon = Sym.Bolt)
-                    CtaButton("Open Settings", { settings = true; close() }, icon = Sym.Settings, tonal = true)
+                    CtaButton("立即启用", now, icon = Sym.Bolt)
+                    CtaButton("打开设置", { settings = true; close() }, icon = Sym.Settings, tonal = true)
                 }
                 else -> {
-                    CtaButton("Next", { step++; vm.haptic(H.SELECTION) }, icon = Sym.ArrowForward)
-                    TextButton(close, Modifier.fillMaxWidth()) { Text("Skip") }
+                    CtaButton("下一步", { step++; vm.haptic(H.SELECTION) }, icon = Sym.ArrowForward)
+                    TextButton(close, Modifier.fillMaxWidth()) { Text("跳过") }
                 }
             }
         }
@@ -332,7 +332,7 @@ private fun TourSheet(vm: MainViewModel, onDismiss: () -> Unit) {
         val close = LocalSheetClose.current
         StepHero(TOUR_STEPS, step, TOUR_STEPS.indices)
         Column(Modifier.fillMaxWidth().padding(24.dp)) {
-            CtaButton(if (step == TOUR_STEPS.lastIndex) "Got it!" else "Next", {
+            CtaButton(if (step == TOUR_STEPS.lastIndex) "Got it!" else "下一步", {
                 vm.haptic(H.SELECTION)
                 when (step) {
                     0 -> { vm.tab = Tab.ABOUT; step = 1 }
@@ -357,13 +357,13 @@ fun BundlePreviewSheet(vm: MainViewModel, b: BundleItem, onDismiss: () -> Unit) 
     val local = b.badge == "Local"; val customized = removed.isNotEmpty() || extras.isNotEmpty()
     val first = remember { apps.firstOrNull()?.id }
     var picking by rememberSaveable { mutableStateOf(false) }; var ask by remember { mutableStateOf<String?>(null) }
-    ConfirmDialog(ask, "Delete", onConfirm = {
+    ConfirmDialog(ask, "删除", onConfirm = {
         vm.set { st -> st.resetBundle(b.id).copy(customBundles = st.customBundles.filterNot { it.id == b.id }) }; vm.haptic(H.WARNING); close()
     }, onDismiss = { ask = null })
     AnimatedContent(picking, label = "bundle") { pick ->
         if (pick) Column {
             val platform = vm.tab.targetPlatform()
-            PickerHeader("Add to bundle", b.title) { picking = false }
+            PickerHeader("添加到合集", b.title) { picking = false }
             AppPickerList(all.filter { it.platform == platform && it.id !in present }, platform) { a ->
                 vm.set { it.addAppToBundle(b.id, a.id) }; vm.haptic(H.SUCCESS); picking = false
             }
@@ -376,23 +376,23 @@ fun BundlePreviewSheet(vm: MainViewModel, b: BundleItem, onDismiss: () -> Unit) 
                     }
                     Spacer(Modifier.width(16.dp))
                     Column(Modifier.weight(1f)) {
-                        Eyebrow("Recommended bundle")
+                        Eyebrow("推荐合集")
                         Text(b.title, style = ty.headlineSmallEmphasized, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         Text("${apps.size} app${if (apps.size == 1) "" else "s"}${b.badge?.let { " · $it" } ?: ""}", style = ty.bodySmall, color = cs.onSurfaceVariant)
                     }
                 }
                 if (b.description.isNotBlank()) Text(b.description, Modifier.padding(horizontal = 8.dp), style = ty.bodyMedium, color = cs.onSurfaceVariant)
                 Spacer(Modifier.height(16.dp))
-                CtaButton("Download", { vm.bundleDownload(b) }, icon = Sym.Download, enabled = apps.isNotEmpty())
+                CtaButton("下载", { vm.bundleDownload(b) }, icon = Sym.Download, enabled = apps.isNotEmpty())
                 Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton({ picking = true }, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) {
-                        Icon(Sym.Add, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Add app")
+                        Icon(Sym.Add, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("添加应用")
                     }
                     if (customized) FilledTonalButton({ vm.set { it.resetBundle(b.id) }; vm.haptic(H.MEDIUM) }, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) {
-                        Icon(Sym.RestartAlt, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Reset")
+                        Icon(Sym.RestartAlt, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("重置")
                     }
-                    if (local) OutlinedButton({ ask = "Delete this bundle?" }, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes(), colors = ButtonDefaults.outlinedButtonColors(contentColor = cs.error)) {
-                        Icon(Sym.Delete, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Delete")
+                    if (local) OutlinedButton({ ask = "删除这个合集？" }, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes(), colors = ButtonDefaults.outlinedButtonColors(contentColor = cs.error)) {
+                        Icon(Sym.Delete, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("删除")
                     }
                 }
             }
@@ -413,12 +413,12 @@ fun BundlePreviewSheet(vm: MainViewModel, b: BundleItem, onDismiss: () -> Unit) 
 
 @Composable
 private fun BundleRow(vm: MainViewModel, a: AppItem, shape: Shape, extra: Boolean, installed: Boolean, hint: Boolean, onOpen: () -> Unit, onRemove: () -> Unit) {
-    SwipeRow(shape, Modifier.padding(bottom = 2.dp), right = SwipeAction(Sym.Delete, "Remove from bundle", cs.error, cs.onError, removes = true, run = onRemove), hint = hint) {
+    SwipeRow(shape, Modifier.padding(bottom = 2.dp), right = SwipeAction(Sym.Delete, "从合集中删除", cs.error, cs.onError, removes = true, run = onRemove), hint = hint) {
         ListItem({ Text(a.name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold) }, Modifier.clickable(onClick = onOpen),
             supportingContent = {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(a.category, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, false))
-                    if (installed) Tag("Installed", Safe)
+                    if (installed) Tag("已安装", Safe)
                     if (extra) Tag("Added", cs.tertiary)
                 }
             },
@@ -430,27 +430,27 @@ private fun BundleRow(vm: MainViewModel, a: AppItem, shape: Shape, extra: Boolea
 // ---------------- VirusTotal ----------------
 
 private val MOD_PAGES = listOf(
-    Step(Sym.Extension, "Patched apps need context", "Morphe builds modify original app code. Antivirus engines can flag those changes even when the build is clean."),
-    Step(Sym.Warning, "False positives can happen", "Heuristic detections may react to patches, signature changes, or bundled compatibility code. Read the result; do not panic from one flag."),
-    Step(Sym.Build, "Best verification path", "If flags look suspicious, patch the app yourself with Morphe Manager, keep patches updated, then rescan manually on VirusTotal."),
+    Step(Sym.Extension, "修补的应用需要上下文", "Morphe 构建修改原始应用代码。即使构建是干净的，防病毒引擎也可以标记这些更改。"),
+    Step(Sym.Warning, "可能会发生误报", "Heuristic detections may react to patches, signature changes, or bundled compatibility code. Read the result; do not panic from one flag."),
+    Step(Sym.Build, "最佳验证路径", "如果标志看起来可疑，请使用 Morphe Manager 自行修补应用，保持补丁更新，然后在 VirusTotal 上手动重新扫描。"),
 )
 private val MOD_SHAPES = listOf(MaterialShapes.Cookie4Sided, MaterialShapes.SoftBurst, MaterialShapes.Gem)
-private val VT_TIPS = listOf("Tip: Scan only apps you plan to install.", "Orion trick: Check the patches tag before installing modded builds.",
-    "Fun fact: 1-4 detections on modded apps can be false positives.", "Pro move: Open the full VirusTotal report and read engine names.")
+private val VT_TIPS = listOf("提示：仅扫描您计划安装的应用。", "Orion技巧：在安装修改版本之前检查补丁标签。",
+    "有趣的事实：对修改后的应用进行 1-4 次检测可能是误报。", "优点：打开完整的VirusTotal报告并读取引擎名称。")
 private const val VT_KEY_TUTORIAL = "https://www.youtube.com/shorts/Ynqw4dgH5ko"
 
 private data class VtRisk(val label: String, val color: Color, val icon: ImageVector, val note: String)
 private fun risk(flagged: Int) = when {
     flagged == 0 -> VtRisk("Clean", Safe, Sym.VerifiedUser, "0 detections. This is the best VirusTotal outcome.")
     flagged == 1 -> VtRisk("Low Signal", Blue, Sym.Info, "1 detection. Often a false positive, especially for modded apps.")
-    flagged < 5 -> VtRisk("Review", Caution, Sym.QueryStats, "2-4 detections. Check engine names and app source.")
-    else -> VtRisk("High Caution", Red, Sym.GppBad, "5+ detections. Treat as risky until manually verified.")
+    flagged < 5 -> VtRisk("Review", Caution, Sym.QueryStats, "2-4 次检测。检查引擎名称和应用源。")
+    else -> VtRisk("高度警惕", Red, Sym.GppBad, "5+ 检测。在手动验证之前，将其视为有风险。")
 }
 
 /** Downloaded APK first, then the installed APK, then a direct remote APK link. Android only. */
 fun scanTargetFor(app: AppItem, s: Settings, d: DataState): ScanTarget? {
     if (app.platform != Platform.ANDROID) return null
-    (d.readyToInstall[app.id] ?: d.pendingCleanup[app.id]?.fileName)?.let { return ScanTarget(ScanTargetType.DOWNLOADED_APK, "Downloaded APK", it) }
+    (d.readyToInstall[app.id] ?: d.pendingCleanup[app.id]?.fileName)?.let { return ScanTarget(ScanTargetType.DOWNLOADED_APK, "已下载APK", it) }
     if (!app.packageName.isNullOrEmpty() && !s.installedVersions[app.id].isNullOrEmpty()) return ScanTarget(ScanTargetType.APK, "Installed APK", app.packageName)
     val variant = (app.availableVersions.firstOrNull()?.variants?.firstOrNull()?.url ?: app.variants.firstOrNull()?.url)?.takeIf { it.isNotEmpty() }
     val url = variant ?: app.downloadUrl
@@ -479,12 +479,12 @@ fun VirusTotalSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) = Or
                 VtView.READY -> VtReady(target, s.virusTotalApiKey, ::scan, ::revoke)
                 VtView.SCANNING -> VtScanning(vt)
                 VtView.RESULTS -> vt.result?.let { r ->
-                    VtResults(r, onCopy = { t.show("SHA-256 copied") }, onReport = { r.permalink?.let(vm.tracker::open) }, onAgain = { vt.reset(); vt.view = VtView.READY }, onClose = close)
+                    VtResults(r, onCopy = { t.show("SHA-256 已复制") }, onReport = { r.permalink?.let(vm.tracker::open) }, onAgain = { vt.reset(); vt.view = VtView.READY }, onClose = close)
                 }
                 VtView.ERROR -> {
-                    Lead("Needs attention", vt.error.ifEmpty { "Something went wrong." }, "Scan stopped", cs.error) { Blob(Sym.ErrorOutline, cs.error, 72, MaterialShapes.Cookie7Sided) }
-                    CtaButton("Scan again", { vt.reset(); vt.view = if (s.virusTotalApiKey.isNotEmpty()) VtView.READY else VtView.KEY }, icon = Sym.Refresh, tonal = true)
-                    TextButton(::revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("Revoke Key") }
+                    Lead("需要注意", vt.error.ifEmpty { "出了点问题。" }, "扫描已停止", cs.error) { Blob(Sym.ErrorOutline, cs.error, 72, MaterialShapes.Cookie7Sided) }
+                    CtaButton("再次扫描", { vt.reset(); vt.view = if (s.virusTotalApiKey.isNotEmpty()) VtView.READY else VtView.KEY }, icon = Sym.Refresh, tonal = true)
+                    TextButton(::revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("撤销密钥") }
                 }
             }
         }
@@ -496,33 +496,33 @@ private fun ModWarning(page: Int, onNext: () -> Unit) {
     var left by remember { mutableIntStateOf(10) }
     LaunchedEffect(Unit) { while (left > 0) { delay(1000); left-- } }
     val p = MOD_PAGES[page]
-    Lead(p.title, p.body, "Notice ${page + 1} of ${MOD_PAGES.size}", Caution, center = true) { Blob(p.icon, Caution, 88, MOD_SHAPES[page]) }
+    Lead(p.title, p.body, "注意${MOD_PAGES.size}的${page + 1}", Caution, center = true) { Blob(p.icon, Caution, 88, MOD_SHAPES[page]) }
     LinearWavyProgressIndicator({ (10 - left) / 10f }, Modifier.fillMaxWidth(), color = Caution, trackColor = Caution.copy(.2f))
-    CtaButton(if (left > 0) "Continue in ${left}s" else if (page < MOD_PAGES.lastIndex) "Continue" else "I Understand", onNext, enabled = left == 0)
+    CtaButton(if (left > 0) "Continue in ${left}s" else if (page < MOD_PAGES.lastIndex) "继续" else "I Understand", onNext, enabled = left == 0)
 }
 
 @Composable
 private fun VtKey(vm: MainViewModel, vt: VtScan, saved: String, revoke: () -> Unit) {
     var key by rememberSaveable { mutableStateOf(saved) }; var show by remember { mutableStateOf(false) }; var err by remember { mutableStateOf("") }
-    Lead("Connect VirusTotal", "Your key stays on this device. Orion uses it only when you start a scan.", "BYOK setup")
-    OutlinedTextField(key, { key = it; err = "" }, Modifier.fillMaxWidth(), label = { Text("API Key") }, placeholder = { Text("Paste your VirusTotal API key") },
+    Lead("连接VirusTotal", "您的密钥保留在该设备上。 Orion 仅在开始扫描时使用它。", "自带密钥设置")
+    OutlinedTextField(key, { key = it; err = "" }, Modifier.fillMaxWidth(), label = { Text("API 密钥") }, placeholder = { Text("粘贴您的 VirusTotal API 密钥") },
         singleLine = true, isError = err.isNotEmpty(), supportingText = if (err.isNotEmpty()) ({ Text(err) }) else null, shape = RoundedCornerShape(16.dp),
         visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         leadingIcon = { Icon(Sym.Key, null) },
-        trailingIcon = { IconButton({ show = !show }) { Icon(if (show) Sym.VisibilityOff else Sym.Visibility, if (show) "Hide key" else "Show key") } })
-    CtaButton("Save Key", {
-        if (key.isBlank()) { err = "Paste your VirusTotal API key first."; vm.haptic(H.ERROR) }
+        trailingIcon = { IconButton({ show = !show }) { Icon(if (show) Sym.VisibilityOff else Sym.Visibility, if (show) "隐藏密钥" else "显示密钥") } })
+    CtaButton("保存密钥", {
+        if (key.isBlank()) { err = "首先粘贴您的 VirusTotal API 密钥。"; vm.haptic(H.ERROR) }
         else { vm.set { it.copy(virusTotalApiKey = key.trim()) }; vt.view = VtView.READY; vm.haptic(H.SUCCESS) }
     }, icon = Sym.Save)
-    if (saved.isNotEmpty()) TextButton(revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("Remove Saved Key") }
+    if (saved.isNotEmpty()) TextButton(revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("删除保存的密钥") }
     Column {
         GroupItem(0, 2, onClick = { vm.tracker.open(VT_KEY_TUTORIAL) }) {
-            ListItem({ Text("Watch key tutorial", fontWeight = FontWeight.SemiBold) }, supportingContent = { Text("Quick help for finding your VirusTotal key.") },
+            ListItem({ Text("观看按键教程", fontWeight = FontWeight.SemiBold) }, supportingContent = { Text("快速帮助您找到 VirusTotal 钥匙。") },
                 leadingContent = { Blob(Sym.PlayCircle, Red, 40) }, trailingContent = { Icon(Sym.OpenInNew, null) },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent))
         }
         GroupItem(1, 2) {
-            ListItem({ Text("Quota tip", fontWeight = FontWeight.SemiBold) }, supportingContent = { Text("Free VirusTotal keys are commonly limited to 4 requests per minute.") },
+            ListItem({ Text("配额提示", fontWeight = FontWeight.SemiBold) }, supportingContent = { Text("免费 VirusTotal 密钥通常限制为每分钟 4 次请求。") },
                 leadingContent = { Blob(Sym.Speed, Caution, 40) }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
         }
     }
@@ -531,22 +531,22 @@ private fun VtKey(vm: MainViewModel, vt: VtScan, saved: String, revoke: () -> Un
 @Composable
 private fun VtReady(target: ScanTarget?, key: String, scan: () -> Unit, revoke: () -> Unit) {
     val masked = if (key.length > 8) key.take(4) + "••••" + key.takeLast(4) else "••••"
-    Lead("Scan with VirusTotal", "Hash lookup first. Upload only happens if VirusTotal has no APK report yet.", "Ready")
+    Lead("使用VirusTotal扫描", "首先进行哈希查找。仅当 VirusTotal 尚无 APK 报告时才会进行上传。", "Ready")
     Column {
         GroupItem(0, 2) {
-            ListItem({ Text(target?.label ?: "No scan target found", fontWeight = FontWeight.SemiBold) },
+            ListItem({ Text(target?.label ?: "未找到扫描目标", fontWeight = FontWeight.SemiBold) },
                 supportingContent = target?.let { { Text(it.detail, maxLines = 2, overflow = TextOverflow.Ellipsis) } },
                 leadingContent = { Blob(if (target == null) Sym.Block else Sym.Android, if (target == null) cs.error else Safe, 40) },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent))
         }
         GroupItem(1, 2) {
-            ListItem({ Text(masked, fontFamily = FontFamily.Monospace) }, supportingContent = { Text("Limit tip") }, leadingContent = { Blob(Sym.Key, cs.primary, 40) },
-                trailingContent = { Tag("Use sparingly", Caution) }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
+            ListItem({ Text(masked, fontFamily = FontFamily.Monospace) }, supportingContent = { Text("限制小费") }, leadingContent = { Blob(Sym.Key, cs.primary, 40) },
+                trailingContent = { Tag("谨慎使用", Caution) }, colors = ListItemDefaults.colors(containerColor = Color.Transparent))
         }
     }
     CtaButton("Start VirusTotal Scan", scan, icon = Sym.Radar, enabled = target != null)
-    TextButton(revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("Revoke Key") }
-    Text("Tip: one scan may need report, upload, and polling calls. Save your free quota for apps you actually plan to install.", style = ty.bodySmall, color = cs.onSurfaceVariant)
+    TextButton(revoke, Modifier.fillMaxWidth(), colors = ButtonDefaults.textButtonColors(contentColor = cs.error)) { Text("撤销密钥") }
+    Text("提示：一次扫描可能需要报告、上传和轮询调用。为您实际计划安装的应用保留免费配额。", style = ty.bodySmall, color = cs.onSurfaceVariant)
 }
 
 @Composable
@@ -556,13 +556,13 @@ private fun VtScanning(vt: VtScan) {
     val p by animateFloatAsState(vt.progress, MaterialTheme.motionScheme.defaultSpatialSpec(), label = "vtp")
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         LoadingIndicator(Modifier.size(112.dp))
-        Text("Scanning softly...", style = ty.titleLargeEmphasized)
+        Text("轻轻扫过……", style = ty.titleLargeEmphasized)
         Text(vt.note, style = ty.bodyMedium, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
         LinearWavyProgressIndicator({ p }, Modifier.fillMaxWidth())
         Surface(shape = RoundedCornerShape(16.dp), color = cs.secondaryContainer) {
             AnimatedContent(tip, Modifier.fillMaxWidth().padding(14.dp), label = "tip") { Text(VT_TIPS[it], style = ty.bodyMedium, textAlign = TextAlign.Center) }
         }
-        Text("Keep this open. VirusTotal can take a little while when a fresh APK needs analysis.", style = ty.bodySmall, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
+        Text("保持这个打开状态。当新的 APK 需要分析时，VirusTotal 可能需要一段时间。", style = ty.bodySmall, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
     }
 }
 
@@ -572,10 +572,10 @@ private fun VtResults(r: VtResult, onCopy: () -> Unit, onReport: () -> Unit, onA
     val st = r.stats; val total = st.total; val rate = if (total > 0) (st.flagged * 100f / total).roundToInt() else 0
     val k = risk(st.flagged)
     val detections = r.engines.filter { it.category == "malicious" || it.category == "suspicious" }.take(8)
-    Lead(k.label, k.note, "VirusTotal result", k.color, center = true) { Blob(k.icon, k.color, 88, MaterialShapes.Cookie9Sided) }
+    Lead(k.label, k.note, "VirusTotal 结果", k.color, center = true) { Blob(k.icon, k.color, 88, MaterialShapes.Cookie9Sided) }
     Surface(shape = RoundedCornerShape(28.dp), color = k.color.copy(.12f)) {
         Column(Modifier.fillMaxWidth().padding(20.dp)) {
-            Text("Harmful rate", style = ty.labelLarge, color = cs.onSurfaceVariant)
+            Text("有害率", style = ty.labelLarge, color = cs.onSurfaceVariant)
             Text("$rate%", style = ty.displayMediumEmphasized, color = k.color)
             LinearProgressIndicator({ rate / 100f }, Modifier.fillMaxWidth().padding(top = 8.dp), color = k.color, trackColor = k.color.copy(.2f))
         }
@@ -592,14 +592,14 @@ private fun VtResults(r: VtResult, onCopy: () -> Unit, onReport: () -> Unit, onA
     }
     Surface(shape = RoundedCornerShape(20.dp), color = cs.surfaceContainerHigh) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Eyebrow("How to read it", cs.onSurfaceVariant)
-            Text("0 detections: generally safe.", style = ty.bodyMedium)
-            Text("1-4 detections: often false positives.", style = ty.bodyMedium)
-            Text("5+ detections: high caution.", style = ty.bodyMedium)
+            Eyebrow("如何阅读", cs.onSurfaceVariant)
+            Text("0 次检测：总体安全。", style = ty.bodyMedium)
+            Text("1-4 次检测：经常出现误报。", style = ty.bodyMedium)
+            Text("5+ 检测：高度谨慎。", style = ty.bodyMedium)
         }
     }
     if (detections.isNotEmpty()) Column {
-        Eyebrow("Flagging engines", cs.onSurfaceVariant, Modifier.padding(start = 4.dp, bottom = 8.dp))
+        Eyebrow("标记引擎", cs.onSurfaceVariant, Modifier.padding(start = 4.dp, bottom = 8.dp))
         detections.forEachIndexed { i, e ->
             GroupItem(i, detections.size) {
                 ListItem({ Text(e.engine, fontWeight = FontWeight.SemiBold) }, supportingContent = { Text(e.result ?: e.category, maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -607,11 +607,11 @@ private fun VtResults(r: VtResult, onCopy: () -> Unit, onReport: () -> Unit, onA
             }
         }
     }
-    if (r.hash != null) CtaButton("Copy SHA-256", { clip.setText(AnnotatedString(r.hash)); onCopy() }, icon = Sym.ContentCopy, tonal = true)
+    if (r.hash != null) CtaButton("复制 SHA-256", { clip.setText(AnnotatedString(r.hash)); onCopy() }, icon = Sym.ContentCopy, tonal = true)
     if (r.permalink != null) CtaButton("Open VirusTotal Report", onReport, icon = Sym.OpenInNew)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onAgain, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) { Text("Scan Again") }
-        TextButton(onClose, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) { Text("Close") }
+        OutlinedButton(onAgain, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) { Text("再次扫描") }
+        TextButton(onClose, modifier = Modifier.weight(1f), shapes = ButtonDefaults.shapes()) { Text("关闭") }
     }
 }
 
@@ -629,9 +629,9 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
     val current = remember(key) { currentFieldValue(app, key) }
     fun submit() {
         vm.refreshCooldown()
-        vm.submissionCooldown?.let { err = "Next request available in $it."; vm.haptic(H.WARNING); return }
+        vm.submissionCooldown?.let { err = "下一个请求可在 $it 中完成。"; vm.haptic(H.WARNING); return }
         validateChange(f, value).takeIf { it.isNotEmpty() }?.let { err = it; vm.haptic(H.ERROR); return }
-        if (ref.isNotBlank()) urlError(ref).takeIf { it.isNotEmpty() }?.let { err = "Evidence link: $it"; vm.haptic(H.ERROR); return }
+        if (ref.isNotBlank()) urlError(ref).takeIf { it.isNotEmpty() }?.let { err = "证据链接：$it"; vm.haptic(H.ERROR); return }
         val v: Any = if (f.kind == "urls") splitUrls(value) else value.trim()
         issueUrl = appUpdateIssueUrl(app, f.label, current, value, reason, ref, appUpdatePayloadJson(app, f.key, v))
         err = ""; view = "ready"; vm.haptic(H.SUCCESS)
@@ -640,7 +640,7 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
     AnimatedContent(view, label = "cr") { v ->
         when (v) {
             "pick" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
-                PickerHeader("Choose one field", "Correct an app detail") { view = "form" }
+                PickerHeader("选择一个字段", "更正应用详细信息") { view = "form" }
                 fields.groupBy { it.group }.forEach { (g, list) ->
                     Eyebrow(g, modifier = Modifier.padding(start = 28.dp, top = 12.dp, bottom = 8.dp))
                     Column(Modifier.padding(horizontal = 16.dp)) {
@@ -654,25 +654,25 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
                 }
             }
             "ready" -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Lead("Update Issue Ready", "The issue contains the exact JSON that the App Update workflow merges into apps.json after review.", f.label, center = true) {
+                Lead("更新问题已准备就绪", "该问题包含应用更新工作流程在审核后合并到 apps.json 中的确切 JSON。", f.label, center = true) {
                     Blob(Sym.TaskAlt, Safe, 88, MaterialShapes.Cookie9Sided)
                 }
-                CtaButton("Open GitHub Issue", {
+                CtaButton("打开GitHub问题", {
                     vm.tracker.open(issueUrl); vm.set { it.registerChangeRequest(System.currentTimeMillis()) }; vm.haptic(H.SUCCESS); close()
                 }, icon = Sym.OpenInNew)
-                CtaButton("Edit Request", { view = "form" }, icon = Sym.Edit, tonal = true)
+                CtaButton("编辑请求", { view = "form" }, icon = Sym.Edit, tonal = true)
             }
             else -> Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(top = 8.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column {
-                    Eyebrow("What to correct", modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                    Eyebrow("纠正什么", modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
                     GroupItem(0, 2, onClick = { view = "pick" }) {
-                        ListItem({ Text(f.label, style = ty.titleMediumEmphasized) }, supportingContent = { Text(f.hint) }, trailingContent = { Icon(Sym.UnfoldMore, "Change field") },
+                        ListItem({ Text(f.label, style = ty.titleMediumEmphasized) }, supportingContent = { Text(f.hint) }, trailingContent = { Icon(Sym.UnfoldMore, "更改字段") },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent))
                     }
                     GroupItem(1, 2, onClick = { showCurrent = !showCurrent }) {
                         Column(Modifier.animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec()).padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Current value", Modifier.weight(1f), style = ty.labelLarge, color = cs.onSurfaceVariant)
+                                Text("当前值", Modifier.weight(1f), style = ty.labelLarge, color = cs.onSurfaceVariant)
                                 Icon(if (showCurrent) Sym.ExpandLess else Sym.ExpandMore, null, tint = cs.onSurfaceVariant)
                             }
                             if (showCurrent) Text(current.take(1000), Modifier.padding(top = 6.dp), style = ty.bodySmall, fontFamily = FontFamily.Monospace)
@@ -680,12 +680,12 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
                     }
                 }
                 val multi = f.kind == "textarea" || f.kind == "urls"; val urlKind = f.kind == "url" || f.kind == "urls"
-                OutlinedTextField(value, { value = it.take(4000); err = "" }, Modifier.fillMaxWidth(), label = { Text("Correct value") }, shape = RoundedCornerShape(16.dp),
+                OutlinedTextField(value, { value = it.take(4000); err = "" }, Modifier.fillMaxWidth(), label = { Text("正确值") }, shape = RoundedCornerShape(16.dp),
                     placeholder = { Text(if (f.kind == "urls") "https://image.example/one.png\nhttps://image.example/two.png" else f.hint) },
                     singleLine = !multi, minLines = if (multi) 4 else 1, keyboardOptions = KeyboardOptions(keyboardType = if (urlKind) KeyboardType.Uri else KeyboardType.Text))
-                OutlinedTextField(reason, { reason = it.take(4000) }, Modifier.fillMaxWidth(), label = { Text("Reason") }, placeholder = { Text("Why is this correction needed?") },
+                OutlinedTextField(reason, { reason = it.take(4000) }, Modifier.fillMaxWidth(), label = { Text("原因") }, placeholder = { Text("为什么需要进行此修正？") },
                     minLines = 3, shape = RoundedCornerShape(16.dp))
-                OutlinedTextField(ref, { ref = it; err = "" }, Modifier.fillMaxWidth(), label = { Text("Evidence link (optional)") }, placeholder = { Text("Release page or official source") },
+                OutlinedTextField(ref, { ref = it; err = "" }, Modifier.fillMaxWidth(), label = { Text("证据链接（可选）") }, placeholder = { Text("发布页面或官方来源") },
                     singleLine = true, shape = RoundedCornerShape(16.dp), leadingIcon = { Icon(Sym.Link, null) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
                 AnimatedVisibility(err.isNotEmpty()) {
                     Surface(shape = RoundedCornerShape(16.dp), color = cs.errorContainer, contentColor = cs.onErrorContainer) {
@@ -694,8 +694,8 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
                         }
                     }
                 }
-                CtaButton("Prepare App Update Issue", ::submit, icon = Sym.Description)
-                Text("+50 XP toward leaderboard", Modifier.fillMaxWidth(), style = ty.labelLarge, color = cs.tertiary, textAlign = TextAlign.Center)
+                CtaButton("准备应用更新问题", ::submit, icon = Sym.Description)
+                Text("+50 XP 进入排行榜", Modifier.fillMaxWidth(), style = ty.labelLarge, color = cs.tertiary, textAlign = TextAlign.Center)
             }
         }
     }
@@ -704,10 +704,10 @@ fun ChangeRequestSheet(vm: MainViewModel, app: AppItem, onDismiss: () -> Unit) =
 // ---------------- 2.0 welcome ----------------
 
 private val WELCOME_POINTS = listOf(
-    Triple(Sym.Speed, "Native speed", "Built with Jetpack Compose, no web view in sight"),
-    Triple(Sym.Palette, "Material 3 Expressive", "Springy motion, shape morphs and Material You"),
-    Triple(Sym.Bolt, "Skip the 24-hour wait", "Built-in wireless install, set up once"),
-    Triple(Sym.MilitaryTech, "Levels and pilot cards", "Earn XP and climb Bronze, Silver and Gold"),
+    Triple(Sym.Speed, "原生速度", "使用 Jetpack Compose 构建，看不到网页视图"),
+    Triple(Sym.Palette, "材料 3 表现力", "弹性运动、形状变形和 Material You"),
+    Triple(Sym.Bolt, "免去24小时的等待", "内置无线安装，一次设置"),
+    Triple(Sym.MilitaryTech, "等级和飞行员卡", "赚取 XP 并攀登铜牌、银牌和金牌"),
 )
 
 /** One-time hero for the native switch, shown after updating over the web app and on a fresh install alike. */
@@ -728,9 +728,9 @@ fun WelcomeSheet(vm: MainViewModel) = OrionSheet(vm::finishWelcome) {
                 Text("RE", Modifier.padding(horizontal = 18.dp, vertical = 4.dp), style = ty.labelLargeEmphasized, letterSpacing = 3.sp)
             }
         }
-        Text("Orion Store 2.0 · Native", Modifier.padding(top = 28.dp).reveal(0), style = ty.labelLarge, color = cs.primary)
-        Text("Native at last", Modifier.reveal(1), style = ty.displaySmallEmphasized, textAlign = TextAlign.Center)
-        Text("The web app you knew has been rebuilt from the ground up as a real Android app. Same Orion, brand new engine.",
+        Text("Orion Store 2.0 · 原生", Modifier.padding(top = 28.dp).reveal(0), style = ty.labelLarge, color = cs.primary)
+        Text("终于本土了", Modifier.reveal(1), style = ty.displaySmallEmphasized, textAlign = TextAlign.Center)
+        Text("您所知道的网络应用已从头开始重建为真正的 Android 应用。同样的Orion，全新的引擎。",
             Modifier.padding(top = 8.dp).reveal(2), style = ty.bodyLarge, color = cs.onSurfaceVariant, textAlign = TextAlign.Center)
         Column(Modifier.padding(top = 20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             WELCOME_POINTS.forEachIndexed { i, (icon, title, desc) ->
@@ -742,9 +742,9 @@ fun WelcomeSheet(vm: MainViewModel) = OrionSheet(vm::finishWelcome) {
         AnimatedVisibility(vm.migratedFromWeb) {
             Row(Modifier.padding(top = 12.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(cs.tertiaryContainer).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Sym.CheckCircle, null, tint = cs.onTertiaryContainer); Spacer(Modifier.width(12.dp))
-                Text("Your profile, badges and settings came along from the web app.", style = ty.bodyMedium, color = cs.onTertiaryContainer)
+                Text("您的个人资料、徽章和设置来自网络应用。", style = ty.bodyMedium, color = cs.onTertiaryContainer)
             }
         }
-        CtaButton("Let's go", close, Modifier.padding(top = 20.dp).reveal(8), icon = Sym.RocketLaunch)
+        CtaButton("开始吧", close, Modifier.padding(top = 20.dp).reveal(8), icon = Sym.RocketLaunch)
     }
 }

@@ -1,0 +1,64 @@
+name: Build Chinese APK
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zh-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK platform 37
+        run: |
+          sdkmanager --install "platforms;android-37" "build-tools;37.0.0" "platform-tools" > /dev/null
+          sdkmanager --list_installed | head -20
+
+      - name: Build release APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          find app/build/outputs/apk/release -name '*.apk' -exec cp {} out/Orion-Store-zh.apk \;
+          ls -la out
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orion-store-zh-apk
+          path: out/*.apk
+
+      - name: Publish release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zh-${{ github.run_number }}
+          name: Orion Store 汉化版 build ${{ github.run_number }}
+          body: |
+            自动构建的简体中文汉化版 APK（源码级文案汉化）。
+            安装包使用 debug 签名，与官方版本签名不同，请先卸载官方版再安装。
+          files: out/*.apk
+          make_latest: true
