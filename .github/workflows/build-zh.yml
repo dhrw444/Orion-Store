@@ -27,13 +27,16 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK platform 37
+      - name: Install SDK packages
         run: |
-          sdkmanager --install "platforms;android-37" "build-tools;37.0.0" "platform-tools" > /dev/null
-          sdkmanager --list_installed | head -20
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools/bin" >> "$GITHUB_PATH"
+          SDKMANAGER="$(ls -d "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)"
+          echo "sdkmanager: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
+          "$SDKMANAGER" --list_installed | sed -n '1,25p'
 
       - name: Build release APK
         run: |
